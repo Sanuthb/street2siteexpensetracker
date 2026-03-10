@@ -14,6 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ProjectDialog } from "@/components/forms/project-dialog";
 import { getClients } from "@/lib/actions/clients";
+import { ProjectActions } from "@/components/actions/project-actions";
 
 export default async function ProjectsPage() {
   const response = await getProjects();
@@ -45,6 +46,7 @@ export default async function ProjectsPage() {
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Budget</TableHead>
                 <TableHead className="text-right">Remaining</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -69,13 +71,16 @@ export default async function ProjectsPage() {
                         {project.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">${project.budget.toLocaleString(undefined, {minimumFractionDigits: 2})}</TableCell>
-                    <TableCell className="text-right font-medium text-primary">${project.remaining.toLocaleString(undefined, {minimumFractionDigits: 2})}</TableCell>
+                    <TableCell className="text-right">₹{project.budget.toLocaleString(undefined, {minimumFractionDigits: 2})}</TableCell>
+                    <TableCell className="text-right font-medium text-primary">₹{project.remaining.toLocaleString(undefined, {minimumFractionDigits: 2})}</TableCell>
+                    <TableCell className="text-right">
+                        <ProjectActions project={project} clients={clients} />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
                     No projects found. Create one to get started.
                   </TableCell>
                 </TableRow>

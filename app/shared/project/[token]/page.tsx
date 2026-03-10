@@ -1,18 +1,16 @@
-import { getProjectById } from "@/lib/actions/projects";
+import { getProjectByShareToken } from "@/lib/actions/projects";
 import { notFound } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { Receipt, CreditCard, CalendarDays, DollarSign, FileText } from "lucide-react";
+import { Receipt, CreditCard, CalendarDays, DollarSign, FileText, ExternalLink } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ProjectInvoiceUpload } from "@/components/forms/project-invoice-upload";
-import { ProjectShare } from "@/components/actions/project-share";
 
-export default async function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function SharedProjectPage({ params }: { params: Promise<{ token: string }> }) {
   const resolvedParams = await params;
-  const result = await getProjectById(resolvedParams.id);
+  const result = await getProjectByShareToken(resolvedParams.token);
   
   if (!result.success || !result.data) {
     notFound();
@@ -27,16 +25,19 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">{project.name}</h2>
-          <p className="text-muted-foreground">Client: {project.clientName || 'Unassigned'}</p>
+          <Badge className="mb-2 bg-primary/20 text-primary border-primary/20 hover:bg-primary/30">Client View Only</Badge>
+          <h2 className="text-3xl font-bold tracking-tight">{project.name}</h2>
+          <p className="text-muted-foreground text-lg">Official Project Dashboard for {project.clientName || 'Valued Client'}</p>
         </div>
-        <div className="flex items-center gap-2 md:gap-4 flex-wrap">
-           <ProjectShare 
-             projectId={project.id} 
-             isPublic={project.isPublic} 
-             shareToken={project.shareToken} 
-           />
-           <ProjectInvoiceUpload projectId={project.id} invoiceUrl={project.invoiceUrl} />
+        <div className="flex items-center gap-4">
+           {project.invoiceUrl && (
+              <Button variant="outline" className="gap-2" asChild>
+                <a href={project.invoiceUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4" />
+                  View Main Invoice
+                </a>
+              </Button>
+           )}
            <Badge variant={project.status === 'active' ? 'default' : 'secondary'} className="capitalize text-sm px-3 py-1">
               {project.status}
            </Badge>
@@ -98,14 +99,14 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
 
       <Tabs defaultValue="expenses" className="w-full">
         <TabsList className="mb-4 bg-muted/50 w-full justify-start p-1 h-auto">
-          <TabsTrigger value="expenses" className="px-6 py-2">Expenses</TabsTrigger>
-          <TabsTrigger value="payments" className="px-6 py-2">Payments</TabsTrigger>
+          <TabsTrigger value="expenses" className="px-6 py-2">Expenses Breakdown</TabsTrigger>
+          <TabsTrigger value="payments" className="px-6 py-2">Payment History</TabsTrigger>
         </TabsList>
         
         <TabsContent value="expenses" className="mt-0">
           <Card className="bg-card/50 shadow-sm border-border/50">
             <CardHeader>
-              <CardTitle>Project Expenses</CardTitle>
+              <CardTitle>Tracked Expenses</CardTitle>
             </CardHeader>
             <CardContent>
                <Table>
@@ -151,7 +152,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
         <TabsContent value="payments" className="mt-0">
            <Card className="bg-card/50 shadow-sm border-border/50">
             <CardHeader>
-              <CardTitle>Client Payments</CardTitle>
+              <CardTitle>Received Payments</CardTitle>
             </CardHeader>
             <CardContent>
                <Table>

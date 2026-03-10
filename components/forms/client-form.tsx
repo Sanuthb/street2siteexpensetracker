@@ -1,51 +1,75 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/app/actions/create-client";
+import { editClient } from "@/app/actions/edit-delete-client";
+import { Loader2 } from "lucide-react";
 
-export function ClientForm({ onSuccess }: { onSuccess?: () => void }) {
-  const [isPending, setIsPending] = useState(false);
+interface ClientFormProps {
+  onSuccess?: () => void;
+  initialData?: {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string | null;
+    company?: string | null;
+  };
+}
 
-  async function onSubmit(formData: FormData) {
-    setIsPending(true);
-    const result = await createClient(formData);
-    setIsPending(false);
+export function ClientForm({ onSuccess, initialData }: ClientFormProps) {
+  const [isPending, startTransition] = useTransition();
 
-    if (result.success) {
-      toast.success("Client added successfully");
-      if (onSuccess) onSuccess();
-    } else {
-      toast.error(result.error || "Failed to add client");
-    }
-  }
-
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    startTransition(async () => {
+      let result;
+      if (initialData) {
+         result = await editClient(initialData.id, formData);
+      } else {
+         result = await createClient(formData);
+      }
+      
+      if (result.success) {
+        toast.success(initialData ? "Client updated successfully" : "Client created successfully");
+        onSuccess?.();
+      } else {
+        toast.error(result.error || "Something went wrong");
+      }
+    });
+  };
+  
   return (
-    <form action={onSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Client Name *</Label>
-        <Input id="name" name="name" required placeholder="Acme Corp" />
+        <Label htmlFor="name">Full Name</Label>
+        <Input id="name" name="name" required placeholder="John Doe" defaultValue={initialData?.name} className="bg-background" />
       </div>
+      
       <div className="space-y-2">
-        <Label htmlFor="email">Email Address *</Label>
-        <Input id="email" name="email" type="email" required placeholder="contact@acme.com" />
+        <Label htmlFor="email">Email Address</Label>
+        <Input id="email" name="email" type="email" required placeholder="john@example.com" defaultValue={initialData?.email} className="bg-background" />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="company">Company</Label>
-        <Input id="company" name="company" placeholder="Acme Corporation" />
-      </div>
+      
       <div className="space-y-2">
         <Label htmlFor="phone">Phone Number</Label>
-        <Input id="phone" name="phone" placeholder="+1 (555) 000-0000" />
+        <Input id="phone" name="phone" type="tel" placeholder="+1 (555) 000-0000" defaultValue={initialData?.phone || ""} className="bg-background" />
       </div>
-      <div className="pt-4 flex justify-end">
-        <Button type="submit" disabled={isPending} className="w-full sm:w-auto hover:-translate-y-0.5 transition-transform">
-          {isPending ? "Adding..." : "Add Client"}
-        </Button>
+      
+      <div className="space-y-2">
+        <Label htmlFor="company">Company</Label>
+        <Input id="company" name="company" placeholder="Acme Inc." defaultValue={initialData?.company || ""} className="bg-background" />
       </div>
+
+      <Button type="submit" className="w-full" disabled={isPending}>
+        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {initialData ? "Update Client" : "Create Client"}
+      </Button>
     </form>
   );
 }

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ClientDialog } from "@/components/forms/client-dialog";
+import { ClientActions } from "@/components/actions/client-actions";
 
 export default async function ClientsPage() {
   const response = await getClients();
@@ -67,9 +68,7 @@ export default async function ClientsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" className="hover:bg-primary/10 hover:text-primary">
-                            View Profile
-                        </Button>
+                        <ClientActions client={client} />
                     </TableCell>
                   </TableRow>
                 ))

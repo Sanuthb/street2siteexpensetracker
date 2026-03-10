@@ -22,8 +22,8 @@ export async function createProject(formData: FormData) {
         return { success: false, error: "Invalid budget amount." };
     }
 
-    const startDate = new Date(startDateRaw);
-    const endDate = endDateRaw ? new Date(endDateRaw) : null;
+    const startDate = startDateRaw;
+    const endDate = endDateRaw || null;
 
     const id = crypto.randomUUID();
 

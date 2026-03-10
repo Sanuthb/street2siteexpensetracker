@@ -8,6 +8,7 @@ export async function getPayments() {
   try {
     const data = await db.select({
       id: payments.id,
+      projectId: payments.projectId,
       amount: payments.amount,
       method: payments.method,
       date: payments.date,

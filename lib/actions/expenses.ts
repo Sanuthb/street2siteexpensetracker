@@ -8,6 +8,9 @@ export async function getExpenses() {
   try {
     const data = await db.select({
       id: expenses.id,
+      projectId: expenses.projectId,
+      subject: expenses.subject,
+      merchant: expenses.merchant,
       description: expenses.description,
       amount: expenses.amount,
       category: expenses.category,

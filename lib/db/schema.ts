@@ -26,8 +26,8 @@ export const projects = sqliteTable('projects', {
   startDate: text("start_date"),
   endDate: text("end_date"),
   invoiceUrl: text("invoice_url"),
-  createdAt: integer("created_at").default(sql`(cast((julianday('now') - 2440587.5)*86400000 as integer))`),
-  updatedAt: integer("updated_at").default(sql`(cast((julianday('now') - 2440587.5)*86400000 as integer))`)
+  shareToken: text("share_token").unique(),
+  isPublic: integer("is_public", { mode: "boolean" }).default(false).notNull(),
 });
 
 export const payments = sqliteTable('payments', {
@@ -57,4 +57,13 @@ export const files = sqliteTable('files', {
   fileUrl: text('file_url').notNull(),
   type: text('type').notNull(), // invoice, receipt, contract, misc
   uploadedAt: integer('uploaded_at', { mode: 'timestamp' }).notNull(),
+});
+
+export const userSettings = sqliteTable('user_settings', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').references(() => users.id).notNull().unique(),
+  theme: text('theme').notNull().default('dark'),
+  currency: text('currency').notNull().default('inr'),
+  emailNotifications: integer('email_notifications', { mode: 'boolean' }).notNull().default(true),
+  invoiceAlerts: integer('invoice_alerts', { mode: 'boolean' }).notNull().default(true),
 });

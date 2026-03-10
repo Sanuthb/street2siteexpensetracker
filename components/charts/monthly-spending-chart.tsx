@@ -27,12 +27,12 @@ export function MonthlySpendingChart({ data }: { data: { name: string, total: nu
           fontSize={12}
           tickLine={false}
           axisLine={false}
-          tickFormatter={(value) => `$${value}`}
+          tickFormatter={(value) => `₹${value}`}
         />
         <Tooltip cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }} contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }} />
         <Bar
           dataKey="total"
-          fill="hsl(var(--primary))"
+          fill="var(--chart-1)"
           radius={[4, 4, 0, 0]}
         />
       </BarChart>

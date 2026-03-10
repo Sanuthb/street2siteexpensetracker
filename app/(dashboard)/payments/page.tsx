@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { PaymentDialog } from "@/components/forms/payment-dialog";
 import { getProjects } from "@/lib/actions/projects";
+import { PaymentActions } from "@/components/actions/payment-actions";
 
 export default async function PaymentsPage() {
   const response = await getPayments();
@@ -54,6 +55,7 @@ export default async function PaymentsPage() {
                 <TableHead>Project</TableHead>
                 <TableHead>Method</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -76,13 +78,16 @@ export default async function PaymentsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-bold text-emerald-500">
-                        +${payment.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}
+                        +₹{payment.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}
+                    </TableCell>
+                    <TableCell className="text-right">
+                        <PaymentActions payment={payment as any} projects={projects} />
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
                     No payments recorded yet.
                   </TableCell>
                 </TableRow>

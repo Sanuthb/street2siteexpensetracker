@@ -9,6 +9,7 @@ export async function getProjects() {
     const data = await db.select({
       id: projects.id,
       name: projects.name,
+      clientId: projects.clientId,
       status: projects.status,
       budget: projects.budget,
       startDate: projects.startDate,
@@ -55,6 +56,8 @@ export async function getProjectById(projectId: string) {
       startDate: projects.startDate,
       endDate: projects.endDate,
       invoiceUrl: projects.invoiceUrl,
+      isPublic: projects.isPublic,
+      shareToken: projects.shareToken,
       clientName: clients.name
     })
     .from(projects)
@@ -81,6 +84,66 @@ export async function getProjectById(projectId: string) {
     };
   } catch (error) {
     console.error(`Failed to fetch project ${projectId}:`, error);
+    return { success: false, error: "Failed to load project details" };
+  }
+}
+
+export async function toggleProjectSharing(projectId: string, enabled: boolean) {
+  try {
+    if (enabled) {
+      const shareToken = crypto.randomUUID();
+      await db.update(projects)
+        .set({ isPublic: true, shareToken })
+        .where(eq(projects.id, projectId));
+    } else {
+      await db.update(projects)
+        .set({ isPublic: false, shareToken: null })
+        .where(eq(projects.id, projectId));
+    }
+    return { success: true };
+  } catch (error) {
+    console.error(`Failed to toggle sharing for project ${projectId}:`, error);
+    return { success: false, error: "Failed to update sharing settings" };
+  }
+}
+
+export async function getProjectByShareToken(token: string) {
+  try {
+    const projectResults = await db.select({
+      id: projects.id,
+      name: projects.name,
+      clientId: projects.clientId,
+      budget: projects.budget,
+      status: projects.status,
+      startDate: projects.startDate,
+      endDate: projects.endDate,
+      invoiceUrl: projects.invoiceUrl,
+      clientName: clients.name
+    })
+    .from(projects)
+    .leftJoin(clients, eq(projects.clientId, clients.id))
+    .where(eq(projects.shareToken, token))
+    .limit(1);
+
+    const project = projectResults[0];
+
+    if (!project) {
+        return { success: false, error: "Project not found or link expired" };
+    }
+
+    const projectPayments = await db.select().from(payments).where(eq(payments.projectId, project.id));
+    const projectExpenses = await db.select().from(expenses).where(eq(expenses.projectId, project.id));
+
+    return {
+      success: true,
+      data: {
+         ...project,
+         payments: projectPayments,
+         expenses: projectExpenses
+      }
+    };
+  } catch (error) {
+    console.error(`Failed to fetch project by token ${token}:`, error);
     return { success: false, error: "Failed to load project details" };
   }
 }

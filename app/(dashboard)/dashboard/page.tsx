@@ -44,7 +44,7 @@ export default async function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight">${stats?.totalPayments?.toLocaleString(undefined, {minimumFractionDigits: 2}) || "0.00"}</div>
+            <div className="text-3xl font-bold tracking-tight">₹{stats?.totalPayments?.toLocaleString(undefined, {minimumFractionDigits: 2}) || "0.00"}</div>
             <p className="text-xs text-emerald-500 mt-1 flex items-center">Total received</p>
           </CardContent>
         </Card>
@@ -56,7 +56,7 @@ export default async function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight">${stats?.totalExpenses?.toLocaleString(undefined, {minimumFractionDigits: 2}) || "0.00"}</div>
+            <div className="text-3xl font-bold tracking-tight">₹{stats?.totalExpenses?.toLocaleString(undefined, {minimumFractionDigits: 2}) || "0.00"}</div>
             <p className="text-xs text-muted-foreground mt-1">Total tracked</p>
           </CardContent>
         </Card>
@@ -68,7 +68,7 @@ export default async function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-primary">${stats?.remainingBalance?.toLocaleString(undefined, {minimumFractionDigits: 2}) || "0.00"}</div>
+            <div className="text-3xl font-bold tracking-tight text-primary">₹{stats?.remainingBalance?.toLocaleString(undefined, {minimumFractionDigits: 2}) || "0.00"}</div>
             <p className="text-xs text-muted-foreground mt-1">Available buffer</p>
           </CardContent>
         </Card>
@@ -111,7 +111,7 @@ export default async function DashboardPage() {
                        </p>
                      </div>
                      <div className="font-medium text-sm">
-                       ${expense.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}
+                       ₹{expense.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}
                      </div>
                    </div>
                  ))

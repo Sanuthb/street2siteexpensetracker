@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ExpenseDialog } from "@/components/forms/expense-dialog";
 import { getProjects } from "@/lib/actions/projects";
-import { DeleteExpenseButton } from "@/components/forms/delete-expense-button";
+import { ExpenseActions } from "@/components/actions/expense-actions";
 
 export default async function ExpensesPage() {
   const response = await getExpenses();
@@ -70,7 +70,7 @@ export default async function ExpensesPage() {
                     </TableCell>
                     <TableCell className="text-muted-foreground">{expense.projectName || 'General'}</TableCell>
                     <TableCell className="text-right font-medium">
-                        ${expense.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}
+                        ₹{expense.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}
                     </TableCell>
                     <TableCell className="text-center">
                         {expense.receiptUrl ? (
@@ -84,13 +84,13 @@ export default async function ExpensesPage() {
                         )}
                     </TableCell>
                     <TableCell className="text-right">
-                        <DeleteExpenseButton id={expense.id} />
+                        <ExpenseActions expense={expense as any} projects={projects} />
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                     No expenses logged yet.
                   </TableCell>
                 </TableRow>

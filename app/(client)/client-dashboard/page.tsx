@@ -49,7 +49,7 @@ export default async function ClientDashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight">${stats.totalPayments.toLocaleString()}</div>
+            <div className="text-3xl font-bold tracking-tight">₹{stats.totalPayments.toLocaleString()}</div>
           </CardContent>
         </Card>
         <Card className="bg-card/50 border-border/50 shadow-sm hover:shadow-md transition-all">
@@ -60,7 +60,7 @@ export default async function ClientDashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight">${stats.totalExpenses.toLocaleString()}</div>
+            <div className="text-3xl font-bold tracking-tight">₹{stats.totalExpenses.toLocaleString()}</div>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-primary/10 to-transparent border-primary/20 shadow-sm hover:shadow-md transition-all">
@@ -71,7 +71,7 @@ export default async function ClientDashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-primary">${stats.remainingBudget.toLocaleString()}</div>
+            <div className="text-3xl font-bold tracking-tight text-primary">₹{stats.remainingBudget.toLocaleString()}</div>
           </CardContent>
         </Card>
       </div>
@@ -95,7 +95,7 @@ export default async function ClientDashboardPage() {
                    <TableRow key={project.id}>
                       <TableCell className="font-medium">{project.name}</TableCell>
                       <TableCell><Badge className="bg-primary/10 text-primary hover:bg-primary/20" variant="secondary">{project.status}</Badge></TableCell>
-                      <TableCell className="text-right">${project.budget.toLocaleString(undefined, {minimumFractionDigits: 2})}</TableCell>
+                      <TableCell className="text-right">₹{project.budget.toLocaleString(undefined, {minimumFractionDigits: 2})}</TableCell>
                    </TableRow>
                    )) : (
                      <TableRow>
@@ -119,7 +119,7 @@ export default async function ClientDashboardPage() {
                          <p className="text-sm font-medium leading-none">{expense.description}</p>
                          <p className="text-xs text-muted-foreground">{projects.find(p => p.id === expense.projectId)?.name || 'General'}</p>
                        </div>
-                       <div className="font-medium text-sm">${expense.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                       <div className="font-medium text-sm">₹{expense.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
                      </div>
                    )) : (
                      <div className="text-center text-muted-foreground py-4">No recent expenses</div>
