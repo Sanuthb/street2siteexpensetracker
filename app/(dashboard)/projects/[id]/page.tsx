@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ProjectInvoiceUpload } from "@/components/forms/project-invoice-upload";
 import { ProjectShare } from "@/components/actions/project-share";
+import { NotifyButton } from "@/components/actions/notify-button";
 
 export default async function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -31,6 +32,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
           <p className="text-muted-foreground">Client: {project.clientName || 'Unassigned'}</p>
         </div>
         <div className="flex items-center gap-2 md:gap-4 flex-wrap">
+           <NotifyButton projectId={project.id} />
            <ProjectShare 
              projectId={project.id} 
              isPublic={project.isPublic} 

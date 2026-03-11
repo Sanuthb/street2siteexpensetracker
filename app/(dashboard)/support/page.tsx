@@ -79,7 +79,7 @@ export default function SupportPage() {
               </div>
               <div className="space-y-2">
                 <h4 className="font-semibold text-sm">Can I add multiple users?</h4>
-                <p className="text-sm text-muted-foreground">Currently, Expensio operates as a single-admin dashboard. Multi-user role management will be available in the upcoming v2.0 release.</p>
+                <p className="text-sm text-muted-foreground">Currently, Expensiq operates as a single-admin dashboard. Multi-user role management will be available in the upcoming v2.0 release.</p>
               </div>
               <div className="space-y-2">
                 <h4 className="font-semibold text-sm">How do I update an incorrect invoice?</h4>

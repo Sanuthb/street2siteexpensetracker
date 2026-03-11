@@ -24,6 +24,7 @@ export async function getDashboardStats() {
       amount: expenses.amount,
       date: expenses.date,
       category: expenses.category,
+      projectId: expenses.projectId,
       projectName: projects.name
     })
     .from(expenses)

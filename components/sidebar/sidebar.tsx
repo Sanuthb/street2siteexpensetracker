@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Home,
@@ -75,13 +76,18 @@ export const Sidebar = ({ user }: SidebarProps) => {
   return (
     <div className="space-y-4 py-4 flex flex-col h-full bg-card text-card-foreground border-r border-border shadow-sm">
       <div className="px-3 py-2 flex-1 overflow-y-auto">
-        <Link href="/dashboard" className="flex items-center pl-3 mb-14">
-          <div className="relative h-8 w-8 mr-4 bg-primary/10 rounded-lg flex items-center justify-center">
-             <span className="text-primary font-bold text-xl leading-none">E</span>
+        <Link href="/dashboard" className="flex items-center pl-2 mb-10 group">
+         <div>
+          <Image src="/logo.png" alt="Expensiq Logo" width={50} height={50}/>
+         </div>
+          <div className="flex flex-col">
+            <h1 className="text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
+              Expensiq
+            </h1>
+            <span className="text-[10px] font-medium text-muted-foreground -mt-1 uppercase tracking-widest">
+              Street2site
+            </span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Expensio
-          </h1>
         </Link>
         <div className="space-y-1">
           {routes.map((route) => (

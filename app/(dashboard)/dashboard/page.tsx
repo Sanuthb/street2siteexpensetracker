@@ -9,6 +9,7 @@ import { ProjectDialog } from "@/components/forms/project-dialog";
 import { ClientDialog } from "@/components/forms/client-dialog";
 import { getProjects } from "@/lib/actions/projects";
 import { getClients } from "@/lib/actions/clients";
+import { NotifyButton } from "@/components/actions/notify-button";
 
 export default async function DashboardPage() {
   const statsResponse = await getDashboardStats();
@@ -103,17 +104,28 @@ export default async function DashboardPage() {
              <div className="space-y-4">
                {stats?.recentExpenses?.length ? (
                  stats.recentExpenses.map((expense) => (
-                   <div key={expense.id} className="flex items-center justify-between border-b pb-2 last:border-0">
-                     <div className="space-y-1">
-                       <p className="text-sm font-medium leading-none">{expense.description}</p>
-                       <p className="text-xs text-muted-foreground">
-                         {expense.projectName ?? 'General'} • {expense.category}
-                       </p>
-                     </div>
-                     <div className="font-medium text-sm">
-                       ₹{expense.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}
-                     </div>
-                   </div>
+                    <div key={expense.id} className="flex items-center justify-between border-b pb-2 last:border-0 group">
+                      <div className="flex items-center gap-3">
+                        {expense.projectId && (
+                          <NotifyButton 
+                            projectId={expense.projectId} 
+                            size="icon" 
+                            variant="ghost" 
+                            showText={false}
+                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                          />
+                        )}
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium leading-none">{expense.description}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {expense.projectName ?? 'General'} • {expense.category}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="font-medium text-sm">
+                        ₹{expense.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}
+                      </div>
+                    </div>
                  ))
                ) : (
                  <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">

@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, blob } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 
 export const users = sqliteTable('users', {
@@ -54,7 +54,9 @@ export const expenses = sqliteTable('expenses', {
 export const files = sqliteTable('files', {
   id: text('id').primaryKey(),
   projectId: text('project_id').references(() => projects.id),
-  fileUrl: text('file_url').notNull(),
+  fileName: text('file_name').notNull(),
+  content: blob('content').notNull(),
+  mimeType: text('mime_type').notNull(),
   type: text('type').notNull(), // invoice, receipt, contract, misc
   uploadedAt: integer('uploaded_at', { mode: 'timestamp' }).notNull(),
 });

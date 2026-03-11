@@ -1,5 +1,6 @@
 import { ThemeProvider } from "../../components/theme-provider";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function ClientLayout({
   children,
@@ -12,10 +13,10 @@ export default function ClientLayout({
         <header className="h-16 border-b border-border bg-card/50 backdrop-blur-md flex items-center px-8 shadow-sm">
             <div className="flex w-full justify-between items-center max-w-6xl mx-auto">
                 <Link href="/client-dashboard" className="flex items-center">
-                    <div className="relative h-8 w-8 mr-3 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <span className="text-primary font-bold text-xl leading-none">E</span>
+                    <div className="relative h-8 w-8 mr-3">
+                        <Image src="/logo.png" alt="Expensiq Logo" fill className="object-contain" />
                     </div>
-                    <h1 className="text-xl font-bold tracking-tight">Expensio Client Portal</h1>
+                    <h1 className="text-xl font-bold tracking-tight">Expensiq Client Portal</h1>
                 </Link>
                 <div className="flex items-center gap-4">
                     <div className="flex flex-col text-right">

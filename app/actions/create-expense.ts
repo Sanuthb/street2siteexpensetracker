@@ -1,16 +1,19 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { expenses } from "@/lib/db/schema";
+import { expenses, files } from "@/lib/db/schema";
 import { revalidatePath } from "next/cache";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
-import { existsSync } from "fs";
 
 export async function createExpense(formData: FormData) {
   try {
     const projectIdRaw = formData.get("projectId") as string;
-    const category = formData.get("category") as string;
+    let category = formData.get("category") as string;
+    const customCategory = formData.get("customCategory") as string;
+    
+    if (category === "Other" && customCategory) {
+        category = customCategory;
+    }
+
     const description = formData.get("description") as string;
     const amountRaw = formData.get("amount") as string;
     const dateRaw = formData.get("date") as string;
@@ -33,25 +36,25 @@ export async function createExpense(formData: FormData) {
 
     let receiptUrl = null;
 
-    // Handle File Upload to /public/uploads
+    // Handle File Upload to Database
     if (receiptFile && receiptFile.size > 0) {
        try {
            const buffer = Buffer.from(await receiptFile.arrayBuffer());
-           const uploadsDir = path.join(process.cwd(), "public", "uploads");
+           const fileId = crypto.randomUUID();
            
-           if (!existsSync(uploadsDir)) {
-               await mkdir(uploadsDir, { recursive: true });
-           }
-
-           const filename = `${Date.now()}-${receiptFile.name.replace(/\s+/g, '-')}`;
-           const filepath = path.join(uploadsDir, filename);
+           await db.insert(files).values({
+               id: fileId,
+               projectId,
+               fileName: receiptFile.name,
+               content: buffer,
+               mimeType: receiptFile.type,
+               type: 'receipt',
+               uploadedAt: new Date()
+           });
            
-           await writeFile(filepath, buffer);
-           receiptUrl = `/uploads/${filename}`;
+           receiptUrl = `/api/files/${fileId}`;
        } catch (fileErr) {
-           console.error("File upload error:", fileErr);
-           // We can proceed without the file if it fails, or return error. 
-           // Proceeding for better UX but logging error.
+           console.error("Database file storage error:", fileErr);
        }
     }
 

@@ -8,7 +8,13 @@ import { revalidatePath } from "next/cache";
 export async function editExpense(id: string, formData: FormData) {
   try {
     const projectIdRaw = formData.get("projectId") as string;
-    const category = formData.get("category") as string;
+    let category = formData.get("category") as string;
+    const customCategory = formData.get("customCategory") as string;
+    
+    if (category === "Other" && customCategory) {
+        category = customCategory;
+    }
+
     const description = formData.get("description") as string;
     const amountRaw = formData.get("amount") as string;
     const dateRaw = formData.get("date") as string;

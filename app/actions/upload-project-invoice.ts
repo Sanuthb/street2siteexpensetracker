@@ -1,11 +1,8 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { projects } from "@/lib/db/schema";
+import { projects, files } from "@/lib/db/schema";
 import { revalidatePath } from "next/cache";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
-import { existsSync } from "fs";
 import { eq } from "drizzle-orm";
 
 export async function uploadProjectInvoice(formData: FormData) {
@@ -19,23 +16,25 @@ export async function uploadProjectInvoice(formData: FormData) {
 
     let invoiceUrl = null;
 
-    // Handle File Upload to /public/uploads/invoices
+    // Handle File Upload to Database
     try {
         const buffer = Buffer.from(await invoiceFile.arrayBuffer());
-        const uploadsDir = path.join(process.cwd(), "public", "uploads", "invoices");
+        const fileId = crypto.randomUUID();
         
-        if (!existsSync(uploadsDir)) {
-            await mkdir(uploadsDir, { recursive: true });
-        }
-
-        const filename = `${Date.now()}-${invoiceFile.name.replace(/\s+/g, '-')}`;
-        const filepath = path.join(uploadsDir, filename);
+        await db.insert(files).values({
+            id: fileId,
+            projectId: projectIdRaw,
+            fileName: invoiceFile.name,
+            content: buffer,
+            mimeType: invoiceFile.type,
+            type: 'invoice',
+            uploadedAt: new Date()
+        });
         
-        await writeFile(filepath, buffer);
-        invoiceUrl = `/uploads/invoices/${filename}`;
+        invoiceUrl = `/api/files/${fileId}`;
     } catch (fileErr) {
-        console.error("File upload error:", fileErr);
-        return { success: false, error: "Failed to upload file to server." };
+        console.error("Database file storage error:", fileErr);
+        return { success: false, error: "Failed to store file in database." };
     }
 
     // Update Project row with invoiceUrl

@@ -35,6 +35,11 @@ interface ExpenseData {
 
 export function ExpenseForm({ projects, onSuccess, initialData }: { projects: Project[], onSuccess?: () => void, initialData?: ExpenseData }) {
   const [isPending, startTransition] = useTransition();
+  const [selectedCategory, setSelectedCategory] = useState(initialData?.category || "");
+
+  const categories = ["Hosting", "Domain", "Development", "Design", "Marketing", "Advertising", "Travel", "Software", "Misc"];
+  const isCustomCategory = selectedCategory && !categories.includes(selectedCategory);
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -80,26 +85,39 @@ export function ExpenseForm({ projects, onSuccess, initialData }: { projects: Pr
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
+        <div className="space-y-2 col-span-2 sm:col-span-1">
           <Label htmlFor="category">Category *</Label>
-          <Select name="category" required defaultValue={initialData?.category}>
+          <Select 
+            name="category" 
+            required 
+            defaultValue={isCustomCategory ? "Other" : initialData?.category}
+            onValueChange={setSelectedCategory}
+          >
             <SelectTrigger className="bg-background">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-               <SelectItem value="Hosting">Hosting</SelectItem>
-               <SelectItem value="Domain">Domain</SelectItem>
-               <SelectItem value="Development">Development</SelectItem>
-               <SelectItem value="Design">Design</SelectItem>
-               <SelectItem value="Marketing">Marketing</SelectItem>
-               <SelectItem value="Advertising">Advertising</SelectItem>
-               <SelectItem value="Travel">Travel</SelectItem>
-               <SelectItem value="Software">Software</SelectItem>
-               <SelectItem value="Misc">Misc</SelectItem>
+                {categories.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+                <SelectItem value="Other">Other</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
+        {selectedCategory === "Other" && (
+            <div className="space-y-2 col-span-2 animate-in slide-in-from-top-2 duration-300">
+                <Label htmlFor="customCategory">Enter Custom Category *</Label>
+                <Input 
+                    id="customCategory" 
+                    name="customCategory" 
+                    required 
+                    placeholder="E.g., Legal, Printing, etc." 
+                    className="bg-background focus:ring-primary"
+                    defaultValue={isCustomCategory ? initialData?.category : ""}
+                />
+            </div>
+        )}
+        <div className="space-y-2 col-span-2 sm:col-span-1">
           <Label htmlFor="projectId">Project Assign (Optional)</Label>
           <Select name="projectId" defaultValue={initialData?.projectId || "unassigned"}>
             <SelectTrigger className="bg-background">
