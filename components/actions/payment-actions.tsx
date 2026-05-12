@@ -73,7 +73,7 @@ export function PaymentActions({ payment, projects }: { payment: Payment, projec
           <DropdownMenuItem onClick={() => setEditOpen(true)} className="cursor-pointer text-foreground hover:bg-muted/50 transition-colors">
             <Edit className="mr-2 h-4 w-4 text-muted-foreground" /> Edit Payment
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleDelete} className="cursor-pointer text-destructive focus:bg-destructive focus:text-destructive-foreground transition-colors">
+          <DropdownMenuItem onClick={handleDelete} className="cursor-pointer text-destructive hover:bg-red-50 transition-colors">
             <Trash2 className="mr-2 h-4 w-4" /> Delete Payment
           </DropdownMenuItem>
         </DropdownMenuContent>

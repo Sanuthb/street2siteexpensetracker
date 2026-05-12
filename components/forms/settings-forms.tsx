@@ -4,11 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Bell, Shield, Moon } from "lucide-react";
+import { User, Bell, Shield, Moon, Building2 } from "lucide-react";
 import { useActionState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
-import { updateUserProfile, updateUserPassword } from "@/app/actions/user-settings";
+import { updateUserProfile, updateUserPassword, updateCompanyProfile } from "@/app/actions/user-settings";
 import { toast } from "sonner";
 
 function SubmitButton({ text }: { text: string }) {
@@ -20,9 +21,10 @@ function SubmitButton({ text }: { text: string }) {
   );
 }
 
-export function SettingsForms({ initialData }: { initialData: { name: string, email: string } }) {
+export function SettingsForms({ initialData, companyData }: { initialData: { name: string, email: string }, companyData?: any }) {
   const [profileState, profileAction] = useActionState(updateUserProfile, null);
   const [passwordState, passwordAction] = useActionState(updateUserPassword, null);
+  const [companyState, companyAction] = useActionState(updateCompanyProfile, null);
 
   useEffect(() => {
     if (profileState?.success) {
@@ -41,6 +43,11 @@ export function SettingsForms({ initialData }: { initialData: { name: string, em
        toast.error(passwordState.error);
     }
   }, [passwordState]);
+
+  useEffect(() => {
+    if (companyState?.success) toast.success(companyState.success);
+    if (companyState?.error) toast.error(companyState.error);
+  }, [companyState]);
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -65,6 +72,66 @@ export function SettingsForms({ initialData }: { initialData: { name: string, em
             
             <div className="pt-2">
                 <SubmitButton text="Save Changes" />
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-card/50 shadow-sm border-border/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Building2 className="h-5 w-5 text-orange-500" />
+            Company Profile
+          </CardTitle>
+          <CardDescription>Details used in invoices and quotations.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={companyAction} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="companyName">Company Name</Label>
+              <Input id="companyName" name="companyName" defaultValue={companyData?.companyName || ''} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="companyEmail">Company Email</Label>
+              <Input id="companyEmail" name="companyEmail" type="email" defaultValue={companyData?.companyEmail || ''} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="companyPhone">Phone Number</Label>
+              <Input id="companyPhone" name="companyPhone" defaultValue={companyData?.companyPhone || ''} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="companyGstin">GSTIN / Tax ID</Label>
+              <Input id="companyGstin" name="companyGstin" defaultValue={companyData?.companyGstin || ''} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="companyAddress">Business Address</Label>
+              <Textarea id="companyAddress" name="companyAddress" defaultValue={companyData?.companyAddress || ''} />
+            </div>
+
+            <div className="border-t border-border/50 pt-4">
+               <h4 className="text-sm font-semibold mb-4">Bank Details (For Invoices)</h4>
+               <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="accountName">Account Holder Name</Label>
+                    <Input id="accountName" name="accountName" defaultValue={companyData?.accountName || ''} placeholder="e.g. Street2Site LLP" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="accountNumber">Account Number</Label>
+                    <Input id="accountNumber" name="accountNumber" defaultValue={companyData?.accountNumber || ''} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ifscCode">IFSC Code</Label>
+                    <Input id="ifscCode" name="ifscCode" defaultValue={companyData?.ifscCode || ''} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="upiId">UPI ID</Label>
+                    <Input id="upiId" name="upiId" defaultValue={companyData?.upiId || ''} placeholder="e.g. street2site@ybl" />
+                  </div>
+               </div>
+            </div>
+
+            <div className="pt-2">
+                <SubmitButton text="Save Company Profile" />
             </div>
           </form>
         </CardContent>

@@ -50,13 +50,39 @@ export async function editPayment(id: string, formData: FormData) {
 
 export async function deletePayment(id: string) {
     try {
+        // 1. Check if there's an associated receipt
+        const { receipts, invoices } = await import("@/lib/db/schema");
+        const receiptResult = await db.select().from(receipts).where(eq(receipts.paymentId, id)).limit(1);
+        
+        if (receiptResult.length > 0) {
+            const receipt = receiptResult[0];
+            
+            // 2. Decrement invoice paidAmount
+            const invoiceResult = await db.select().from(invoices).where(eq(invoices.id, receipt.invoiceId)).limit(1);
+            if (invoiceResult.length > 0) {
+                const invoice = invoiceResult[0];
+                const newPaidAmount = Math.max(0, invoice.paidAmount - receipt.amount);
+                const newStatus = newPaidAmount === 0 ? "Draft" : (newPaidAmount >= invoice.grandTotal ? "Paid" : "Partially Paid");
+
+                await db.update(invoices).set({
+                    paidAmount: newPaidAmount,
+                    status: newStatus
+                }).where(eq(invoices.id, invoice.id));
+            }
+
+            // 3. Delete receipt
+            await db.delete(receipts).where(eq(receipts.id, receipt.id));
+        }
+
+        // 4. Delete payment record
         await db.delete(payments).where(eq(payments.id, id));
+        
         revalidatePath("/payments");
         revalidatePath("/dashboard");
-        // Cannot reliably target specific project revalidate here without an extra fetch, but dashboard/payments covers most bases
+        revalidatePath("/invoices");
         return { success: true };
     } catch (error) {
         console.error("Failed to delete payment:", error);
-        return { success: false, error: "Failed to delete payment." };
+        return { success: false, error: "Failed to delete payment due to linked records." };
     }
 }

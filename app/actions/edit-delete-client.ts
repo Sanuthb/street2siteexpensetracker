@@ -11,6 +11,10 @@ export async function editClient(id: string, formData: FormData) {
     const email = formData.get("email") as string;
     const phone = formData.get("phone") as string;
     const company = formData.get("company") as string;
+    const gstin = formData.get("gstin") as string;
+    const billingAddress = formData.get("billingAddress") as string;
+    const shippingAddress = formData.get("shippingAddress") as string;
+    const notes = formData.get("notes") as string;
 
     if (!name || !email) {
       return { success: false, error: "Name and Email are required" };
@@ -20,7 +24,11 @@ export async function editClient(id: string, formData: FormData) {
       name,
       email,
       phone: phone || null,
-      company: company || null
+      company: company || null,
+      gstin: gstin || null,
+      billingAddress: billingAddress || null,
+      shippingAddress: shippingAddress || null,
+      notes: notes || null
     }).where(eq(clients.id, id));
 
     revalidatePath("/clients");

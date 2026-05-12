@@ -12,6 +12,8 @@ import {
   BarChart3,
   Settings,
   HelpCircle,
+  FileText,
+  ScrollText,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -44,6 +46,16 @@ const routes = [
     label: "Clients",
     icon: Users,
     href: "/clients",
+  },
+  {
+    label: "Quotations",
+    icon: FileText,
+    href: "/quotations",
+  },
+  {
+    label: "Invoices",
+    icon: ScrollText,
+    href: "/invoices",
   },
   {
     label: "Reports",

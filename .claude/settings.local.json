@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx drizzle-kit *)",
+      "Bash(type null *)",
+      "Bash(>> temp_fix.sql)",
+      "Bash(node fix-index.js)",
+      "Bash(del drizzle\\\\0000_last_magus.sql)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}

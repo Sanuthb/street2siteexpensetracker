@@ -10,6 +10,10 @@ export async function createClient(formData: FormData) {
     const company = formData.get("company") as string;
     const email = formData.get("email") as string;
     const phone = formData.get("phone") as string;
+    const gstin = formData.get("gstin") as string;
+    const billingAddress = formData.get("billingAddress") as string;
+    const shippingAddress = formData.get("shippingAddress") as string;
+    const notes = formData.get("notes") as string;
 
     if (!name || !email) {
       return { success: false, error: "Name and Email are required." };
@@ -23,6 +27,10 @@ export async function createClient(formData: FormData) {
       company,
       email,
       phone,
+      gstin,
+      billingAddress,
+      shippingAddress,
+      notes,
     });
 
     revalidatePath("/clients");

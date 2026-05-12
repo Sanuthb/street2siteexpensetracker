@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { getSession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
+import { userSettings } from "@/lib/db/schema";
 
 export async function updateUserProfile(prevState: any, formData: FormData) {
   const session = await getSession();
@@ -70,5 +71,69 @@ export async function updateUserPassword(prevState: any, formData: FormData) {
   } catch (error) {
     console.error("Failed to update password", error);
     return { error: "Failed to update password." };
+  }
+}
+
+export async function updateCompanyProfile(prevState: any, formData: FormData) {
+  const session = await getSession();
+  if (!session?.userId) return { error: "Unauthorized" };
+
+  const companyName = formData.get("companyName") as string;
+  const companyEmail = formData.get("companyEmail") as string;
+  const companyPhone = formData.get("companyPhone") as string;
+  const companyAddress = formData.get("companyAddress") as string;
+  const companyGstin = formData.get("companyGstin") as string;
+  const accountName = formData.get("accountName") as string;
+  const accountNumber = formData.get("accountNumber") as string;
+  const ifscCode = formData.get("ifscCode") as string;
+  const upiId = formData.get("upiId") as string;
+
+  try {
+    const existing = await db.select().from(userSettings).where(eq(userSettings.userId, session.userId));
+    if (existing.length === 0) {
+      await db.insert(userSettings).values({
+        id: crypto.randomUUID(),
+        userId: session.userId,
+        companyName,
+        companyEmail,
+        companyPhone,
+        companyAddress,
+        companyGstin,
+        accountName,
+        accountNumber,
+        ifscCode,
+        upiId
+      });
+    } else {
+      await db.update(userSettings).set({
+        companyName,
+        companyEmail,
+        companyPhone,
+        companyAddress,
+        companyGstin,
+        accountName,
+        accountNumber,
+        ifscCode,
+        upiId
+      }).where(eq(userSettings.userId, session.userId));
+    }
+    revalidatePath("/settings");
+    return { success: "Company profile updated successfully." };
+  } catch (error) {
+    console.error("Failed to update company profile", error);
+    return { error: "Failed to update company profile." };
+  }
+}
+
+export async function getUserSettings() {
+  const session = await getSession();
+  if (!session?.userId) return { success: false, error: "Unauthorized" };
+
+  try {
+    const res = await db.select().from(userSettings).where(eq(userSettings.userId, session.userId)).limit(1);
+    return { success: true, data: res[0] };
+  } catch (error) {
+    console.error("Failed to fetch settings", error);
+    return { success: false, error: "Failed to fetch settings" };
   }
 }

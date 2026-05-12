@@ -1,6 +1,6 @@
 import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { users, userSettings } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { SettingsForms } from "@/components/forms/settings-forms";
@@ -18,6 +18,9 @@ export default async function SettingsPage() {
     redirect("/login");
   }
 
+  const settingsResult = await db.select().from(userSettings).where(eq(userSettings.userId, session.userId)).limit(1);
+  const userSetting = settingsResult[0];
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div>
@@ -25,7 +28,7 @@ export default async function SettingsPage() {
         <p className="text-muted-foreground">Manage your account settings and preferences.</p>
       </div>
 
-      <SettingsForms initialData={{ name: user.name, email: user.email }} />
+      <SettingsForms initialData={{ name: user.name, email: user.email }} companyData={userSetting} />
     </div>
   );
 }

@@ -12,6 +12,10 @@ export async function getClients() {
       email: clients.email,
       phone: clients.phone,
       company: clients.company,
+      gstin: clients.gstin,
+      billingAddress: clients.billingAddress,
+      shippingAddress: clients.shippingAddress,
+      notes: clients.notes,
     }).from(clients);
 
     // Get project counts per client

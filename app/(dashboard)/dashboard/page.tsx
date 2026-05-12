@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FolderKanban, Users, CreditCard, DollarSign, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { getDashboardStats } from "@/lib/actions/dashboard";
 import { MonthlySpendingChart } from "@/components/charts/monthly-spending-chart";
 import { ExpenseDialog } from "@/components/forms/expense-dialog";
@@ -63,14 +64,18 @@ export default async function DashboardPage() {
         </Card>
         <Card className="bg-gradient-to-br from-card to-card/50 border-border/50 shadow-sm hover:shadow-md transition-all">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Remaining Balance</CardTitle>
-             <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
-                <DollarSign className="h-4 w-4 text-primary" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Billed</CardTitle>
+             <div className="h-8 w-8 bg-orange-500/10 rounded-full flex items-center justify-center">
+                <DollarSign className="h-4 w-4 text-orange-500" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-primary">₹{stats?.remainingBalance?.toLocaleString(undefined, {minimumFractionDigits: 2}) || "0.00"}</div>
-            <p className="text-xs text-muted-foreground mt-1">Available buffer</p>
+            <div className="text-3xl font-bold tracking-tight text-orange-500">₹{stats?.totalBilled?.toLocaleString(undefined, {minimumFractionDigits: 2}) || "0.00"}</div>
+            {stats && stats.overdueInvoices > 0 ? (
+              <p className="text-xs text-destructive mt-1 font-semibold">{stats.overdueInvoices} Overdue Invoices</p>
+            ) : (
+              <p className="text-xs text-muted-foreground mt-1">Total invoiced</p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -83,6 +88,16 @@ export default async function DashboardPage() {
             <PaymentDialog projects={projects} triggerVariant="outline" />
             <ProjectDialog clients={clients} triggerVariant="outline" />
             <ClientDialog />
+            <Button variant="outline" asChild>
+              <Link href="/quotations/create">
+                <Plus className="mr-2 h-4 w-4" /> New Quotation
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/invoices/create">
+                <Plus className="mr-2 h-4 w-4" /> New Invoice
+              </Link>
+            </Button>
          </div>
       </div>
 
@@ -112,7 +127,7 @@ export default async function DashboardPage() {
                             size="icon" 
                             variant="ghost" 
                             showText={false}
-                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="h-8 w-8 group-hover:opacity-100 transition-opacity"
                           />
                         )}
                         <div className="space-y-1">
