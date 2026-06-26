@@ -92,7 +92,7 @@ function footer(proposal: ProposalData) {
       <div class="footer-contact-grid">
         <div class="footer-contact-item">
           <div class="footer-icon-box">${icons.phone}</div>
-          <div class="footer-contact-text">${escapeHtml(f.phone)}<br />+91 8088187900</div>
+          <div class="footer-contact-text">+91 ${escapeHtml(f.phone)}<br />+91 8088187900</div>
         </div>
         <div class="footer-contact-item">
           <div class="footer-icon-box">${icons.web}</div>
@@ -174,23 +174,27 @@ function scopePage(proposal: ProposalData) {
 }
 
 function pricingPage(proposal: ProposalData) {
+  const showTaxes = proposal.taxesVisible !== false;
   const groups = proposal.pricingGroups.map((group) => {
     const rows = group.items.map((item) => `<tr>
       <td><strong>${escapeHtml(item.description)}</strong>${item.optional ? ` <span class="pill">Optional</span>` : ""}${item.bullets.length ? `<ul class="muted" style="margin:8px 0 0;padding-left:18px;line-height:1.5;">${item.bullets.map((bullet) => `<li>${escapeHtml(bullet)}</li>`).join("")}</ul>` : ""}</td>
       <td style="text-align:center;">${escapeHtml(item.quantity)}</td>
       <td style="text-align:right;">${money(item.unitPrice, proposal.details.currency)}</td>
-      <td style="text-align:right;">${escapeHtml(item.taxRate)}%</td>
+      ${showTaxes ? `<td style="text-align:right;">${escapeHtml(item.taxRate)}%</td>` : ""}
       <td style="text-align:right;">${escapeHtml(item.cycle)}</td>
       <td style="text-align:right;font-weight:900;">${money(getPricingItemTotal(item), proposal.details.currency)}</td>
     </tr>`).join("");
-    return `<div style="margin-bottom:34px;"><h3 style="font-size:21px;margin:0 0 6px;">${escapeHtml(group.title)}</h3><p class="muted" style="margin:0 0 14px;">${escapeHtml(group.description)}</p><table><thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Tax</th><th>Cycle</th><th style="text-align:right;">Total</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    return `<div style="margin-bottom:34px;"><h3 style="font-size:21px;margin:0 0 6px;">${escapeHtml(group.title)}</h3><p class="muted" style="margin:0 0 14px;">${escapeHtml(group.description)}</p><table><thead><tr><th>Item</th><th>Qty</th><th>Unit</th>${showTaxes ? `<th>Tax</th>` : ""}<th>Cycle</th><th style="text-align:right;">Total</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }).join("");
-  return page(proposal, `<div class="label">Pricing</div><h2 class="section-title">Investment Breakdown</h2>${groups}`);
+  return page(proposal, `<div class="label">Pricing</div><h2 class="section-title">Pricing Breakdown</h2>${groups}`);
 }
 
 function deploymentTotalsPage(proposal: ProposalData) {
   const totals = calculateProposalTotals(proposal.pricingGroups, proposal.deploymentBlocks, proposal.totals);
   const blocks = proposal.deploymentBlocks.filter((block) => block.visible).map((block) => `<div class="card"><div class="label">${escapeHtml(block.cycle)}</div><h3 style="margin:9px 0;font-size:20px;">${escapeHtml(block.title)}</h3><p class="muted" style="font-size:13px;line-height:1.55;">${escapeHtml(block.description)}</p><strong>${money(block.amount, proposal.details.currency)}</strong></div>`).join("");
+  
+  const showTaxes = proposal.taxesVisible !== false;
+
   return page(proposal, `
     <div class="label">Deployment & Maintenance</div>
     <h2 class="section-title">Running Costs & Support</h2>
@@ -201,17 +205,38 @@ function deploymentTotalsPage(proposal: ProposalData) {
         ${proposal.notesVisible ? `<div class="html-content">${safeHtml(proposal.notesHtml)}</div>` : `<p class="muted">No additional notes.</p>`}
       </div>
       <div class="card" style="border-top:6px solid ${theme(proposal.template).accent};">
-        <div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span>Subtotal</span><strong>${money(totals.subtotal, proposal.details.currency)}</strong></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+          <span>Subtotal ${totals.isMonthlyBase ? "(Monthly)" : totals.isYearlyBase ? "(Yearly)" : ""}</span>
+          <strong>${money(totals.subtotal, proposal.details.currency)}</strong>
+        </div>
         <div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span>Discount</span><strong>- ${money(totals.discountAmount, proposal.details.currency)}</strong></div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span>CGST</span><strong>${money(totals.cgstTotal, proposal.details.currency)}</strong></div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span>SGST</span><strong>${money(totals.sgstTotal, proposal.details.currency)}</strong></div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span>IGST</span><strong>${money(totals.igstTotal, proposal.details.currency)}</strong></div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span>TDS</span><strong>- ${money(totals.tdsAmount, proposal.details.currency)}</strong></div>
-        <div style="display:flex;justify-content:space-between;border-top:2px solid #111827;padding-top:14px;font-size:22px;"><span>Grand Total</span><strong class="accent">${money(totals.grandTotal, proposal.details.currency)}</strong></div>
+        
+        ${showTaxes ? `
+          <div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span>CGST</span><strong>${money(totals.cgstTotal, proposal.details.currency)}</strong></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span>SGST</span><strong>${money(totals.sgstTotal, proposal.details.currency)}</strong></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span>IGST</span><strong>${money(totals.igstTotal, proposal.details.currency)}</strong></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span>TDS</span><strong>- ${money(totals.tdsAmount, proposal.details.currency)}</strong></div>
+        ` : ""}
+        
+        <div style="display:flex;justify-content:space-between;border-top:2px solid #111827;padding-top:14px;font-size:22px;">
+          <span>Grand Total ${totals.isMonthlyBase ? "(Monthly)" : totals.isYearlyBase ? "(Yearly)" : ""}</span>
+          <strong class="accent">${money(totals.grandTotal, proposal.details.currency)}</strong>
+        </div>
         <div style="display:flex;justify-content:space-between;margin-top:12px;"><span>Advance</span><strong>${money(totals.advanceAmount, proposal.details.currency)}</strong></div>
         <div style="display:flex;justify-content:space-between;margin-top:8px;"><span>Remaining</span><strong>${money(totals.remainingAmount, proposal.details.currency)}</strong></div>
-        ${totals.monthlyTotal ? `<div style="margin-top:18px;" class="pill">Monthly: ${money(totals.monthlyTotal, proposal.details.currency)}</div>` : ""}
-        ${totals.yearlyTotal ? `<div style="margin-top:8px;" class="pill">Yearly: ${money(totals.yearlyTotal, proposal.details.currency)}</div>` : ""}
+        
+        ${totals.monthlyTotal && !totals.isMonthlyBase ? `
+          <div style="display:flex;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px dashed #cbd5e1;color:#7c3aed;font-weight:700;">
+            <span>Monthly Recurring</span>
+            <strong>${money(totals.monthlyTotal, proposal.details.currency)}</strong>
+          </div>
+        ` : ""}
+        ${totals.yearlyTotal && !totals.isYearlyBase ? `
+          <div style="display:flex;justify-content:space-between;margin-top:8px;color:#4f46e5;font-weight:700;">
+            <span>Yearly Recurring</span>
+            <strong>${money(totals.yearlyTotal, proposal.details.currency)}</strong>
+          </div>
+        ` : ""}
       </div>
     </div>
   `);

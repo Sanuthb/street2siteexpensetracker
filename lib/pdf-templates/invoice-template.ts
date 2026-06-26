@@ -49,6 +49,7 @@ type DocumentData = {
   paymentMethod?: unknown;
   paidAmount?: unknown;
   proposal?: import("@/lib/quotation/types").ProposalData;
+  showTaxes?: boolean;
 };
 
 function escapeHtml(value: unknown) {
@@ -221,7 +222,10 @@ function footer(c: ReturnType<typeof company>, color = "#f97316") {
 
 
 function invoiceTerms(data: DocumentData) {
-  if (data?.terms) return preserveLines(data.terms);
+  if (data?.terms) {
+    const clean = String(data.terms).replace("<!--showTaxes:false-->", "").trim();
+    return preserveLines(clean);
+  }
 
   return `
     <ul class="terms" style="padding-left: 16px; margin: 0;">
@@ -271,16 +275,18 @@ function generateInvoiceOnlyHTML(data: DocumentData) {
   const isPaid = Number(data.paidAmount || 0) >= Number(data.grandTotal || 0);
   const accent = isPaid ? "#f97316" : "#f97316";
 
+  const showTaxes = data.showTaxes !== false && (!data?.terms || !String(data.terms).includes("<!--showTaxes:false-->"));
+
   const rows = items.map((item: LineItem) => {
     const lineAmount = Number(item.quantity || 0) * Number(item.unitPrice || 0);
     const taxAmount = lineAmount * (Number(item.taxRate || 0) / 100);
     return `<tr>
-      <td style="padding: 18px 8px; border-bottom: 1px solid #e5e7eb; width: 36%; font-weight: 700;">${preserveLines(item.description)}</td>
+      <td style="padding: 18px 8px; border-bottom: 1px solid #e5e7eb; ${showTaxes ? "width: 36%;" : "width: 50%;"} font-weight: 700;">${preserveLines(item.description)}</td>
       <td style="padding: 18px 8px; border-bottom: 1px solid #e5e7eb; text-align: right;">${money(item.unitPrice)}</td>
       <td style="padding: 18px 8px; border-bottom: 1px solid #e5e7eb; text-align: center;">${escapeHtml(item.quantity || 0)}</td>
       <td style="padding: 18px 8px; border-bottom: 1px solid #e5e7eb; text-align: right;">${money(lineAmount)}</td>
-      <td style="padding: 18px 8px; border-bottom: 1px solid #e5e7eb; text-align: right;">${money(taxAmount)}</td>
-      <td style="padding: 18px 8px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 800;">${money(Number(item.amount || lineAmount) + taxAmount)}</td>
+      ${showTaxes ? `<td style="padding: 18px 8px; border-bottom: 1px solid #e5e7eb; text-align: right;">${money(taxAmount)}</td>` : ""}
+      <td style="padding: 18px 8px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 800;">${money(Number(item.amount || lineAmount) + (showTaxes ? taxAmount : 0))}</td>
     </tr>`;
   }).join("");
 
@@ -323,7 +329,7 @@ function generateInvoiceOnlyHTML(data: DocumentData) {
             <th style="padding: 13px 8px; text-align: right;">Price</th>
             <th style="padding: 13px 8px; text-align: center;">Qty</th>
             <th style="padding: 13px 8px; text-align: right;">Subtotal</th>
-            <th style="padding: 13px 8px; text-align: right;">Tax</th>
+            ${showTaxes ? `<th style="padding: 13px 8px; text-align: right;">Tax</th>` : ""}
             <th style="padding: 13px 8px; text-align: right;">Total</th>
           </tr>
         </thead>
@@ -342,7 +348,7 @@ function generateInvoiceOnlyHTML(data: DocumentData) {
         </div>
         <div style="background: #f9fafb; border: 1px solid #e5e7eb; padding: 18px;">
           <div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><span class="label" style="color:#111827;">Subtotal</span><strong>${money(data?.subTotal)}</strong></div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><span class="label" style="color:#111827;">Tax</span><strong>${money(data?.taxTotal)}</strong></div>
+          ${showTaxes ? `<div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><span class="label" style="color:#111827;">Tax</span><strong>${money(data?.taxTotal)}</strong></div>` : ""}
           <div style="display: flex; justify-content: space-between; border-top: 3px solid #111827; padding-top: 14px; font-size: 22px; font-weight: 900;"><span>TOTAL</span><span style="color: ${accent};">${money(data?.grandTotal)}</span></div>
         </div>
       </section>

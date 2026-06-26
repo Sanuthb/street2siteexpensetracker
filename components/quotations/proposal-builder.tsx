@@ -270,5 +270,110 @@ function TotalsEditor({ proposal, setProposal, taxes }: { proposal: ProposalData
   const totals = calculateProposalTotals(proposal.pricingGroups, proposal.deploymentBlocks, proposal.totals);
   const updateTotals = (patch: Partial<typeof proposal.totals>) => setProposal((current) => ({ ...current, totals: calculateProposalTotals(current.pricingGroups, current.deploymentBlocks, { ...current.totals, ...patch }) }));
   const activeTaxes = taxes.filter((t) => t.isActive);
-  return <Card><CardHeader><CardTitle>Totals, GST, TDS & Advance</CardTitle></CardHeader><CardContent className="space-y-4"><div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"><div><Label>Discount Amount (₹)</Label><Input type="number" value={proposal.totals.discountAmount} onChange={(e) => updateTotals({ discountAmount: Number(e.target.value) })} placeholder="0" /></div><div><Label>CGST Rate (%)</Label><Select value={String(proposal.totals.cgstRate)} onValueChange={(v) => updateTotals({ cgstRate: Number(v) })}><SelectTrigger><SelectValue placeholder="Select CGST" /></SelectTrigger><SelectContent><SelectItem value="0">None (0%)</SelectItem>{activeTaxes.map((tax) => <SelectItem key={tax.id} value={String(tax.rate / 2)}>{tax.name} ({tax.rate / 2}%)</SelectItem>)}</SelectContent></Select></div><div><Label>SGST Rate (%)</Label><Select value={String(proposal.totals.sgstRate)} onValueChange={(v) => updateTotals({ sgstRate: Number(v) })}><SelectTrigger><SelectValue placeholder="Select SGST" /></SelectTrigger><SelectContent><SelectItem value="0">None (0%)</SelectItem>{activeTaxes.map((tax) => <SelectItem key={tax.id} value={String(tax.rate / 2)}>{tax.name} ({tax.rate / 2}%)</SelectItem>)}</SelectContent></Select></div><div><Label>IGST Rate (%)</Label><Select value={String(proposal.totals.igstRate)} onValueChange={(v) => updateTotals({ igstRate: Number(v) })}><SelectTrigger><SelectValue placeholder="Select IGST" /></SelectTrigger><SelectContent><SelectItem value="0">None (0%)</SelectItem>{activeTaxes.map((tax) => <SelectItem key={tax.id} value={String(tax.rate)}>{tax.name} ({tax.rate}%)</SelectItem>)}</SelectContent></Select></div><div><Label>TDS Rate (%)</Label><Select value={String(proposal.totals.tdsRate)} onValueChange={(v) => updateTotals({ tdsRate: Number(v) })}><SelectTrigger><SelectValue placeholder="Select TDS" /></SelectTrigger><SelectContent><SelectItem value="0">None (0%)</SelectItem><SelectItem value="1">1%</SelectItem><SelectItem value="5">5%</SelectItem><SelectItem value="10">10%</SelectItem></SelectContent></Select></div><div><Label>Advance Payment (₹)</Label><Input type="number" value={proposal.totals.advanceAmount} onChange={(e) => updateTotals({ advanceAmount: Number(e.target.value) })} placeholder="0" /></div></div><div className="grid gap-4 md:grid-cols-3"><div className="rounded-xl bg-orange-500/10 p-4 border border-orange-500/30"><p className="text-xs text-muted-foreground">Subtotal (Items + Deployment)</p><p className="text-lg font-bold">₹{totals.subtotal.toLocaleString("en-IN")}</p></div><div className="rounded-xl bg-green-500/10 p-4 border border-green-500/30"><p className="text-xs text-muted-foreground">Grand Total (After Tax & Discount)</p><p className="text-2xl font-black text-green-600">₹{totals.grandTotal.toLocaleString("en-IN")}</p></div><div className="rounded-xl bg-blue-500/10 p-4 border border-blue-500/30"><p className="text-xs text-muted-foreground">Remaining After Advance</p><p className="text-xl font-bold text-blue-600">₹{totals.remainingAmount.toLocaleString("en-IN")}</p></div></div></CardContent></Card>;
+  
+  const showTaxes = proposal.taxesVisible !== false;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Totals, GST, TDS & Advance</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+          <Switch 
+            id="taxes-visible-toggle"
+            checked={showTaxes} 
+            onCheckedChange={(checked) => setProposal(current => ({ ...current, taxesVisible: checked }))} 
+          />
+          <Label htmlFor="taxes-visible-toggle" className="cursor-pointer text-sm font-semibold">Show Taxes in Proposal</Label>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <Label>Discount Amount (₹)</Label>
+            <Input type="number" value={proposal.totals.discountAmount} onChange={(e) => updateTotals({ discountAmount: Number(e.target.value) })} placeholder="0" />
+          </div>
+          <div>
+            <Label>CGST Rate (%)</Label>
+            <Select value={String(proposal.totals.cgstRate)} onValueChange={(v) => updateTotals({ cgstRate: Number(v) })}>
+              <SelectTrigger><SelectValue placeholder="Select CGST" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">None (0%)</SelectItem>
+                {activeTaxes.map((tax) => <SelectItem key={tax.id} value={String(tax.rate / 2)}>{tax.name} ({tax.rate / 2}%)</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>SGST Rate (%)</Label>
+            <Select value={String(proposal.totals.sgstRate)} onValueChange={(v) => updateTotals({ sgstRate: Number(v) })}>
+              <SelectTrigger><SelectValue placeholder="Select SGST" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">None (0%)</SelectItem>
+                {activeTaxes.map((tax) => <SelectItem key={tax.id} value={String(tax.rate / 2)}>{tax.name} ({tax.rate / 2}%)</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>IGST Rate (%)</Label>
+            <Select value={String(proposal.totals.igstRate)} onValueChange={(v) => updateTotals({ igstRate: Number(v) })}>
+              <SelectTrigger><SelectValue placeholder="Select IGST" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">None (0%)</SelectItem>
+                {activeTaxes.map((tax) => <SelectItem key={tax.id} value={String(tax.rate)}>{tax.name} ({tax.rate}%)</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>TDS Rate (%)</Label>
+            <Select value={String(proposal.totals.tdsRate)} onValueChange={(v) => updateTotals({ tdsRate: Number(v) })}>
+              <SelectTrigger><SelectValue placeholder="Select TDS" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">None (0%)</SelectItem>
+                <SelectItem value="1">1%</SelectItem>
+                <SelectItem value="5">5%</SelectItem>
+                <SelectItem value="10">10%</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Advance Payment (₹)</Label>
+            <Input type="number" value={proposal.totals.advanceAmount} onChange={(e) => updateTotals({ advanceAmount: Number(e.target.value) })} placeholder="0" />
+          </div>
+        </div>
+
+        <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3">
+          <div className="rounded-xl bg-orange-500/10 p-4 border border-orange-500/30 w-fit">
+            <p className="text-xs text-muted-foreground">
+              Subtotal {totals.isMonthlyBase ? "(Monthly)" : totals.isYearlyBase ? "(Yearly)" : "(Items + Deployment)"}
+            </p>
+            <p className="text-lg font-bold">₹{totals.subtotal.toLocaleString("en-IN")}</p>
+          </div>
+          <div className="rounded-xl bg-green-500/10 p-4 border border-green-500/30 w-fit">
+            <p className="text-xs text-muted-foreground">
+              Grand Total {totals.isMonthlyBase ? "(Monthly)" : totals.isYearlyBase ? "(Yearly)" : "(After Tax & Discount)"}
+            </p>
+            <p className="text-2xl font-black text-green-600">₹{totals.grandTotal.toLocaleString("en-IN")}</p>
+          </div>
+          <div className="rounded-xl bg-blue-500/10 p-4 border border-blue-500/30 w-fit">
+            <p className="text-xs text-muted-foreground">
+              Remaining {totals.isMonthlyBase ? "(Monthly)" : totals.isYearlyBase ? "(Yearly)" : "After Advance"}
+            </p>
+            <p className="text-xl font-bold text-blue-600">₹{totals.remainingAmount.toLocaleString("en-IN")}</p>
+          </div>
+          {totals.monthlyTotal > 0 && !totals.isMonthlyBase && (
+            <div className="rounded-xl bg-purple-500/10 p-4 border border-purple-500/30 w-fit">
+              <p className="text-xs text-muted-foreground">Monthly Recurring Total</p>
+              <p className="text-xl font-bold text-purple-600">₹{totals.monthlyTotal.toLocaleString("en-IN")}</p>
+            </div>
+          )}
+          {totals.yearlyTotal > 0 && !totals.isYearlyBase && (
+            <div className="rounded-xl bg-indigo-500/10 p-4 border border-indigo-500/30">
+              <p className="text-xs text-muted-foreground">Yearly Recurring Total</p>
+              <p className="text-xl font-bold text-indigo-600">₹{totals.yearlyTotal.toLocaleString("en-IN")}</p>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
 }

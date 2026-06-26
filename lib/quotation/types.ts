@@ -87,6 +87,8 @@ export type ProposalTotals = ProposalTotalsInput & {
   tdsAmount: number;
   grandTotal: number;
   remainingAmount: number;
+  isMonthlyBase?: boolean;
+  isYearlyBase?: boolean;
 };
 
 export type ProposalSignatureData = {
@@ -131,6 +133,7 @@ export type ProposalData = {
   termsList: string[];
   signatures: ProposalSignatureData;
   signaturesVisible: boolean;
+  taxesVisible?: boolean;
   footer: ProposalCompanyInfo;
   watermarkText: string;
   sections: ProposalSection[];

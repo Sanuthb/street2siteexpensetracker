@@ -360,6 +360,18 @@ export async function convertToInvoice(id: string) {
     const proposalItems = flattenProposalPricingItems(quo.proposal);
     const invoiceItemsSource = proposalItems.length ? proposalItems : quo.items;
 
+    const isTaxesVisible = quo.proposal.taxesVisible !== false;
+    const finalTerms = isTaxesVisible ? quo.terms : `${quo.terms || ""}\n<!--showTaxes:false-->`.trim();
+
+    let calculatedSubTotal = 0;
+    let calculatedTaxTotal = 0;
+    for (const item of invoiceItemsSource) {
+      const amount = Number(item.quantity || 0) * Number(item.unitPrice || 0);
+      calculatedSubTotal += amount;
+      calculatedTaxTotal += amount * (Number(item.taxRate || 0) / 100);
+    }
+    const calculatedGrandTotal = calculatedSubTotal + (isTaxesVisible ? calculatedTaxTotal : 0);
+
     await db.insert(invoices).values({
       id: invoiceId,
       clientId: quo.clientId,
@@ -368,12 +380,12 @@ export async function convertToInvoice(id: string) {
       number: invoiceNumber,
       date: new Date(),
       dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      subTotal: quo.subTotal,
-      taxTotal: quo.taxTotal,
-      grandTotal: quo.grandTotal,
+      subTotal: calculatedSubTotal,
+      taxTotal: isTaxesVisible ? calculatedTaxTotal : 0,
+      grandTotal: calculatedGrandTotal,
       paidAmount: 0,
       notes: quo.proposal.requirementHtml,
-      terms: quo.terms,
+      terms: finalTerms,
       status: "Draft"
     });
 

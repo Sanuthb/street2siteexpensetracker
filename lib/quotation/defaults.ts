@@ -105,6 +105,7 @@ export function createDefaultProposal(settings?: Record<string, unknown>, client
       companySealUrl: "",
     },
     signaturesVisible: true,
+    taxesVisible: true,
     footer: company,
     watermarkText: "Street2Site",
     sections: proposalSections,

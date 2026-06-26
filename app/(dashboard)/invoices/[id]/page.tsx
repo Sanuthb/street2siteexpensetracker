@@ -30,8 +30,11 @@ export default async function InvoicePreviewPage({ params }: { params: { id: str
   const items = inv.items;
   const balanceDue = Math.max(0, inv.grandTotal - inv.paidAmount);
 
+  const showTaxes = !inv.terms || !inv.terms.includes("<!--showTaxes:false-->");
+  const cleanTerms = inv.terms ? inv.terms.replace("<!--showTaxes:false-->", "").trim() : "";
+
   // Prepare data for PDF including settings
-  const pdfData = { ...inv, settings };
+  const pdfData = { ...inv, showTaxes, settings };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 max-w-5xl mx-auto">
@@ -90,72 +93,74 @@ export default async function InvoicePreviewPage({ params }: { params: { id: str
                   </div>
                </div>
 
-               <div className="mb-8 overflow-x-auto">
-                 <table className="w-full min-w-[500px]">
-                   <thead>
-                     <tr className="border-b-2 border-border text-left uppercase text-xs font-bold tracking-widest text-muted-foreground">
-                       <th className="py-3">Description</th>
-                       <th className="py-3 text-center">Qty</th>
-                       <th className="py-3 text-right">Price</th>
-                       <th className="py-3 text-right">Tax</th>
-                       <th className="py-3 text-right">Amount</th>
-                     </tr>
-                   </thead>
-                   <tbody>
-                     {items.map((item: any) => (
-                       <tr key={item.id} className="border-b border-border/50 text-sm">
-                         <td className="py-4 text-foreground font-medium">{item.description}</td>
-                         <td className="py-4 text-center">{item.quantity}</td>
-                         <td className="py-4 text-right">₹{item.unitPrice.toLocaleString()}</td>
-                         <td className="py-4 text-right">{item.taxRate}%</td>
-                         <td className="py-4 text-right font-bold text-foreground">₹{item.amount.toLocaleString()}</td>
-                       </tr>
-                     ))}
-                   </tbody>
-                 </table>
-               </div>
+                <div className="mb-8 overflow-x-auto">
+                  <table className="w-full min-w-[500px]">
+                    <thead>
+                      <tr className="border-b-2 border-border text-left uppercase text-xs font-bold tracking-widest text-muted-foreground">
+                        <th className="py-3">Description</th>
+                        <th className="py-3 text-center">Qty</th>
+                        <th className="py-3 text-right">Price</th>
+                        {showTaxes && <th className="py-3 text-right">Tax</th>}
+                        <th className="py-3 text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map((item: any) => (
+                        <tr key={item.id} className="border-b border-border/50 text-sm">
+                          <td className="py-4 text-foreground font-medium">{item.description}</td>
+                          <td className="py-4 text-center">{item.quantity}</td>
+                          <td className="py-4 text-right">₹{item.unitPrice.toLocaleString()}</td>
+                          {showTaxes && <td className="py-4 text-right">{item.taxRate}%</td>}
+                          <td className="py-4 text-right font-bold text-foreground">₹{item.amount.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
 
-               <div className="flex justify-end mb-12">
-                 <div className="w-full md:w-80 bg-muted/20 p-6 rounded-lg border border-border/50 space-y-3">
-                    <div className="flex justify-between text-sm text-muted-foreground font-medium">
-                       <span>Subtotal</span>
-                       <span>₹{inv.subTotal.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between text-sm text-muted-foreground font-medium">
-                       <span>Total Tax</span>
-                       <span>₹{inv.taxTotal.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between items-center border-t border-border/50 pt-4">
-                       <span className="font-bold">Grand Total</span>
-                       <span className="font-bold text-lg">₹{inv.grandTotal.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-green-600">
-                       <span className="font-semibold text-sm">Paid Amount</span>
-                       <span className="font-semibold">₹{inv.paidAmount.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between items-center border-t-2 border-orange-500 pt-3">
-                       <span className="font-bold text-lg">Balance Due</span>
-                       <span className="font-black text-2xl text-orange-500">₹{balanceDue.toLocaleString()}</span>
-                    </div>
-                 </div>
-               </div>
+                <div className="flex justify-end mb-12">
+                  <div className="w-full md:w-80 bg-muted/20 p-6 rounded-lg border border-border/50 space-y-3">
+                     <div className="flex justify-between text-sm text-muted-foreground font-medium">
+                        <span>Subtotal</span>
+                        <span>₹{inv.subTotal.toLocaleString()}</span>
+                     </div>
+                     {showTaxes && (
+                       <div className="flex justify-between text-sm text-muted-foreground font-medium">
+                          <span>Total Tax</span>
+                          <span>₹{inv.taxTotal.toLocaleString()}</span>
+                       </div>
+                     )}
+                     <div className="flex justify-between items-center border-t border-border/50 pt-4">
+                        <span className="font-bold">Grand Total</span>
+                        <span className="font-bold text-lg">₹{inv.grandTotal.toLocaleString()}</span>
+                     </div>
+                     <div className="flex justify-between items-center text-green-600">
+                        <span className="font-semibold text-sm">Paid Amount</span>
+                        <span className="font-semibold">₹{inv.paidAmount.toLocaleString()}</span>
+                     </div>
+                     <div className="flex justify-between items-center border-t-2 border-orange-500 pt-3">
+                        <span className="font-bold text-lg">Balance Due</span>
+                        <span className="font-black text-2xl text-orange-500">₹{balanceDue.toLocaleString()}</span>
+                     </div>
+                  </div>
+                </div>
 
-               {(inv.notes || inv.terms) && (
-                 <div className="grid grid-cols-2 gap-8 text-xs text-muted-foreground pt-8 border-t border-border/50">
-                   {inv.notes && (
-                     <div>
-                       <h4 className="font-bold text-foreground mb-2 uppercase tracking-wider">Notes</h4>
-                       <p className="whitespace-pre-wrap leading-relaxed">{inv.notes}</p>
-                     </div>
-                   )}
-                   {inv.terms && (
-                     <div>
-                       <h4 className="font-bold text-foreground mb-2 uppercase tracking-wider">Terms & Conditions</h4>
-                       <p className="whitespace-pre-wrap leading-relaxed">{inv.terms}</p>
-                     </div>
-                   )}
-                 </div>
-               )}
+                {(inv.notes || cleanTerms) && (
+                  <div className="grid grid-cols-2 gap-8 text-xs text-muted-foreground pt-8 border-t border-border/50">
+                    {inv.notes && (
+                      <div>
+                        <h4 className="font-bold text-foreground mb-2 uppercase tracking-wider">Notes</h4>
+                        <p className="whitespace-pre-wrap leading-relaxed">{inv.notes}</p>
+                      </div>
+                    )}
+                    {cleanTerms && (
+                      <div>
+                        <h4 className="font-bold text-foreground mb-2 uppercase tracking-wider">Terms & Conditions</h4>
+                        <p className="whitespace-pre-wrap leading-relaxed">{cleanTerms}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
             </CardContent>
          </Card>
 

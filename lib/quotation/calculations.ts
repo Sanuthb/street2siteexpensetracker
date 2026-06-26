@@ -54,6 +54,18 @@ export function calculateProposalTotals(
     else subtotal += amount;
   });
 
+  let isMonthlyBase = false;
+  let isYearlyBase = false;
+  if (subtotal === 0) {
+    if (monthlyTotal > 0) {
+      subtotal = monthlyTotal;
+      isMonthlyBase = true;
+    } else if (yearlyTotal > 0) {
+      subtotal = yearlyTotal;
+      isYearlyBase = true;
+    }
+  }
+
   const taxable = Math.max(0, subtotal - Number(totalsInput.discountAmount || 0));
   const cgstTotal = taxable * (Number(totalsInput.cgstRate || 0) / 100);
   const sgstTotal = taxable * (Number(totalsInput.sgstRate || 0) / 100);
@@ -76,6 +88,8 @@ export function calculateProposalTotals(
     tdsAmount,
     grandTotal,
     remainingAmount,
+    isMonthlyBase,
+    isYearlyBase,
   };
 }
 

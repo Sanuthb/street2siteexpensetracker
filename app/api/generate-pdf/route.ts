@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import puppeteer, { type Browser } from "puppeteer";
+import type { Browser } from "puppeteer-core";
 import { generateInvoiceHTML, generateReceiptHTML } from "@/lib/pdf-templates/invoice-template";
+
+export const maxDuration = 60; // Allow enough time for serverless browser spin up
 
 export async function POST(req: Request) {
   let browser: Browser | undefined;
@@ -24,11 +26,33 @@ export async function POST(req: Request) {
 
     console.log(`Generating ${type} PDF for ${data.number}...`);
 
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-web-security"],
-      timeout: 60000
-    });
+    const isLocal = process.env.NODE_ENV === "development" || process.env.LOCAL_PDF === "true";
+
+    if (isLocal) {
+      console.log("Launching local Puppeteer...");
+      const puppeteerLocal = require("puppeteer");
+      browser = await puppeteerLocal.launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-web-security"],
+        timeout: 60000
+      });
+    } else {
+      console.log("Launching production Puppeteer-Core with @sparticuz/chromium...");
+      const puppeteerCore = require("puppeteer-core");
+      const chromium = require("@sparticuz/chromium");
+      
+      browser = await puppeteerCore.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+        timeout: 60000
+      });
+    }
+
+    if (!browser) {
+      throw new Error("Failed to initialize PDF generator browser");
+    }
 
     const page = await browser.newPage();
     console.log("New page created.");

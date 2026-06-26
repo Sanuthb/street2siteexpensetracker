@@ -109,12 +109,34 @@ export function ProposalPreview({ proposal }: { proposal: ProposalData }) {
 
 
         <section className="mt-8 rounded-3xl border bg-white/70 p-5 dark:bg-white/5">
-          <div className="flex justify-between"><span>Subtotal</span><strong>{money(totals.subtotal, proposal.details.currency)}</strong></div>
-          <div className="mt-2 flex justify-between"><span>GST</span><strong>{money(totals.gstTotal, proposal.details.currency)}</strong></div>
-          <div className="mt-2 flex justify-between"><span>TDS</span><strong>- {money(totals.tdsAmount, proposal.details.currency)}</strong></div>
-          <div className="mt-3 flex justify-between border-t pt-3 text-xl"><span className="font-black">Grand Total</span><strong className="text-[var(--accent)]">{money(totals.grandTotal, proposal.details.currency)}</strong></div>
+          <div className="flex justify-between">
+            <span>Subtotal {totals.isMonthlyBase ? "(Monthly)" : totals.isYearlyBase ? "(Yearly)" : ""}</span>
+            <strong>{money(totals.subtotal, proposal.details.currency)}</strong>
+          </div>
+          {proposal.taxesVisible !== false && (
+            <>
+              <div className="mt-2 flex justify-between"><span>GST</span><strong>{money(totals.gstTotal, proposal.details.currency)}</strong></div>
+              <div className="mt-2 flex justify-between"><span>TDS</span><strong>- {money(totals.tdsAmount, proposal.details.currency)}</strong></div>
+            </>
+          )}
+          <div className="mt-3 flex justify-between border-t pt-3 text-xl">
+            <span className="font-black">Grand Total {totals.isMonthlyBase ? "(Monthly)" : totals.isYearlyBase ? "(Yearly)" : ""}</span>
+            <strong className="text-[var(--accent)]">{money(totals.grandTotal, proposal.details.currency)}</strong>
+          </div>
           <div className="mt-2 flex justify-between"><span>Advance</span><strong>{money(totals.advanceAmount, proposal.details.currency)}</strong></div>
           <div className="mt-2 flex justify-between"><span>Remaining</span><strong>{money(totals.remainingAmount, proposal.details.currency)}</strong></div>
+          {totals.monthlyTotal > 0 && !totals.isMonthlyBase && (
+            <div className="mt-3 flex justify-between border-t pt-3 font-semibold text-purple-600">
+              <span>Monthly Recurring</span>
+              <strong>{money(totals.monthlyTotal, proposal.details.currency)}</strong>
+            </div>
+          )}
+          {totals.yearlyTotal > 0 && !totals.isYearlyBase && (
+            <div className="mt-2 flex justify-between font-semibold text-indigo-600">
+              <span>Yearly Recurring</span>
+              <strong>{money(totals.yearlyTotal, proposal.details.currency)}</strong>
+            </div>
+          )}
         </section>
 
         {proposal.signaturesVisible ? (

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2, Save } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -76,8 +77,16 @@ export function InvoiceBuilder({ clients, taxes, settings, initialData }: Invoic
   const [date, setDate] = useState(toDateInput(initialData?.date) || new Date().toISOString().split("T")[0]);
   const [dueDate, setDueDate] = useState(toDateInput(initialData?.dueDate));
   const [notes, setNotes] = useState(initialData?.notes || "");
-  const [terms, setTerms] = useState(initialData?.terms || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [showTaxes, setShowTaxes] = useState(() => {
+    if (!initialData?.terms) return true;
+    return !initialData.terms.includes("<!--showTaxes:false-->");
+  });
+  const [terms, setTerms] = useState(() => {
+    if (!initialData?.terms) return "";
+    return initialData.terms.replace("<!--showTaxes:false-->", "").trim();
+  });
 
   useEffect(() => {
     reset();
@@ -101,6 +110,10 @@ export function InvoiceBuilder({ clients, taxes, settings, initialData }: Invoic
       return;
     }
 
+    const finalTerms = showTaxes ? terms : `${terms}\n<!--showTaxes:false-->`.trim();
+    const finalTaxTotal = showTaxes ? taxTotal : 0;
+    const finalGrandTotal = showTaxes ? grandTotal : subTotal;
+
     setIsSubmitting(true);
     const data = {
       clientId,
@@ -108,10 +121,10 @@ export function InvoiceBuilder({ clients, taxes, settings, initialData }: Invoic
       date,
       dueDate,
       notes,
-      terms,
+      terms: finalTerms,
       subTotal,
-      taxTotal,
-      grandTotal,
+      taxTotal: finalTaxTotal,
+      grandTotal: finalGrandTotal,
       items
     };
 
@@ -163,24 +176,34 @@ export function InvoiceBuilder({ clients, taxes, settings, initialData }: Invoic
       <Card className="bg-card/50 border-border/50">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Line Items</CardTitle>
-          <Button onClick={addItem} variant="outline" size="sm" className="text-orange-500 border-orange-200 hover:bg-orange-500 hover:text-white">
-            <Plus className="h-4 w-4 mr-2" /> Add Item
-          </Button>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Switch 
+                id="invoice-taxes-toggle"
+                checked={showTaxes} 
+                onCheckedChange={setShowTaxes} 
+              />
+              <Label htmlFor="invoice-taxes-toggle" className="cursor-pointer text-sm font-semibold">Show Taxes</Label>
+            </div>
+            <Button onClick={addItem} variant="outline" size="sm" className="text-orange-500 border-orange-200 hover:bg-orange-500 hover:text-white">
+              <Plus className="h-4 w-4 mr-2" /> Add Item
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <div className="min-w-[800px]">
             <div className="grid grid-cols-12 gap-4 mb-4 font-semibold text-muted-foreground text-sm">
-              <div className="col-span-4">Description</div>
+              <div className={showTaxes ? "col-span-4" : "col-span-6"}>Description</div>
               <div className="col-span-2">Quantity</div>
               <div className="col-span-2">Price (₹)</div>
-              <div className="col-span-2">Tax</div>
-              <div className="col-span-1">Amount</div>
+              {showTaxes && <div className="col-span-2">Tax</div>}
+              <div className="col-span-1 text-right">Amount</div>
               <div className="col-span-1 text-right">Actions</div>
             </div>
             
             {items.map((item) => (
               <div key={item.id} className="grid grid-cols-12 gap-4 items-center mb-4">
-                <div className="col-span-4">
+                <div className={showTaxes ? "col-span-4" : "col-span-6"}>
                   <Input placeholder="Item description" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} />
                 </div>
                 <div className="col-span-2">
@@ -189,19 +212,21 @@ export function InvoiceBuilder({ clients, taxes, settings, initialData }: Invoic
                 <div className="col-span-2">
                   <Input type="number" min="0" value={item.unitPrice} onChange={(e) => updateItem(item.id, 'unitPrice', e.target.value)} />
                 </div>
-                <div className="col-span-2">
-                  <Select value={item.taxRate.toString()} onValueChange={(val) => updateItem(item.id, 'taxRate', val)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Tax" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0">No Tax</SelectItem>
-                      {taxes.map(t => (
-                        <SelectItem key={t.id} value={t.rate.toString()}>{t.name} ({t.rate}%)</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {showTaxes && (
+                  <div className="col-span-2">
+                    <Select value={item.taxRate.toString()} onValueChange={(val) => updateItem(item.id, 'taxRate', val)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Tax" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0">No Tax</SelectItem>
+                        {taxes.map(t => (
+                          <SelectItem key={t.id} value={t.rate.toString()}>{t.name} ({t.rate}%)</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div className="col-span-1 font-medium text-right pt-2">
                   ₹{item.amount.toLocaleString()}
                 </div>
@@ -220,13 +245,15 @@ export function InvoiceBuilder({ clients, taxes, settings, initialData }: Invoic
                 <span>Subtotal:</span>
                 <span>₹{subTotal.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between text-muted-foreground">
-                <span>Tax:</span>
-                <span>₹{taxTotal.toLocaleString()}</span>
-              </div>
+              {showTaxes && (
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Tax:</span>
+                  <span>₹{taxTotal.toLocaleString()}</span>
+                </div>
+              )}
               <div className="flex justify-between text-lg font-bold border-t border-border/50 pt-3">
                 <span>Total:</span>
-                <span className="text-orange-500">₹{grandTotal.toLocaleString()}</span>
+                <span className="text-orange-500">₹{(showTaxes ? grandTotal : subTotal).toLocaleString()}</span>
               </div>
             </div>
           </div>

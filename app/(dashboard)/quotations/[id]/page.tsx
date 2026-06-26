@@ -55,10 +55,30 @@ export default async function QuotationPreviewPage({ params }: { params: { id: s
           <div className="rounded-3xl border bg-card p-6 shadow-sm">
             <p className="text-sm font-medium text-muted-foreground">Totals</p>
             <div className="mt-4 space-y-3 text-sm">
-              <div className="flex justify-between"><span>Subtotal</span><strong>₹{proposal.totals.subtotal.toLocaleString("en-IN")}</strong></div>
-              <div className="flex justify-between"><span>GST</span><strong>₹{proposal.totals.gstTotal.toLocaleString("en-IN")}</strong></div>
-              <div className="flex justify-between border-t pt-3 text-lg"><span>Grand Total</span><strong className="text-orange-600">₹{proposal.totals.grandTotal.toLocaleString("en-IN")}</strong></div>
+              <div className="flex justify-between">
+                <span>Subtotal {proposal.totals.isMonthlyBase ? "(Monthly)" : proposal.totals.isYearlyBase ? "(Yearly)" : ""}</span>
+                <strong>₹{proposal.totals.subtotal.toLocaleString("en-IN")}</strong>
+              </div>
+              {proposal.taxesVisible !== false && (
+                <div className="flex justify-between"><span>GST</span><strong>₹{proposal.totals.gstTotal.toLocaleString("en-IN")}</strong></div>
+              )}
+              <div className="flex justify-between border-t pt-3 text-lg">
+                <span>Grand Total {proposal.totals.isMonthlyBase ? "(Monthly)" : proposal.totals.isYearlyBase ? "(Yearly)" : ""}</span>
+                <strong className="text-orange-600">₹{proposal.totals.grandTotal.toLocaleString("en-IN")}</strong>
+              </div>
               <div className="flex justify-between"><span>Remaining</span><strong>₹{proposal.totals.remainingAmount.toLocaleString("en-IN")}</strong></div>
+              {proposal.totals.monthlyTotal > 0 && !proposal.totals.isMonthlyBase && (
+                <div className="flex justify-between text-purple-600 font-semibold border-t pt-2 mt-2">
+                  <span>Monthly Recurring</span>
+                  <strong>₹{proposal.totals.monthlyTotal.toLocaleString("en-IN")}</strong>
+                </div>
+              )}
+              {proposal.totals.yearlyTotal > 0 && !proposal.totals.isYearlyBase && (
+                <div className="flex justify-between text-indigo-600 font-semibold">
+                  <span>Yearly Recurring</span>
+                  <strong>₹{proposal.totals.yearlyTotal.toLocaleString("en-IN")}</strong>
+                </div>
+              )}
             </div>
           </div>
           <div className="rounded-3xl border bg-card p-6 shadow-sm">
