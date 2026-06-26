@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
-import type { Browser } from "puppeteer-core";
 import { generateInvoiceHTML, generateReceiptHTML } from "@/lib/pdf-templates/invoice-template";
 
 export const maxDuration = 60; // Allow enough time for serverless browser spin up
 
 export async function POST(req: Request) {
-  let browser: Browser | undefined;
+  let browser: any;
 
   try {
     const body = await req.json();
@@ -30,7 +29,8 @@ export async function POST(req: Request) {
 
     if (isLocal) {
       console.log("Launching local Puppeteer...");
-      const puppeteerLocal = require("puppeteer");
+      const puppeteerLocalMod = await import("puppeteer");
+      const puppeteerLocal = puppeteerLocalMod.default || puppeteerLocalMod;
       browser = await puppeteerLocal.launch({
         headless: true,
         args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-web-security"],
@@ -38,14 +38,16 @@ export async function POST(req: Request) {
       });
     } else {
       console.log("Launching production Puppeteer-Core with @sparticuz/chromium...");
-      const puppeteerCore = require("puppeteer-core");
-      const chromium = require("@sparticuz/chromium");
+      const puppeteerCoreMod = await import("puppeteer-core");
+      const chromiumMod = await import("@sparticuz/chromium");
+      
+      const puppeteerCore = puppeteerCoreMod.default || puppeteerCoreMod;
+      const chromium = chromiumMod.default || chromiumMod;
       
       browser = await puppeteerCore.launch({
         args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
         executablePath: await chromium.executablePath(),
-        headless: chromium.headless,
+        headless: true,
         timeout: 60000
       });
     }
