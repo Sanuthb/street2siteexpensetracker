@@ -43,6 +43,7 @@ type DocumentData = {
   notes?: unknown;
   scope?: unknown;
   subTotal?: unknown;
+  discountAmount?: unknown;
   taxTotal?: unknown;
   grandTotal?: unknown;
   amount?: unknown;
@@ -348,6 +349,7 @@ function generateInvoiceOnlyHTML(data: DocumentData) {
         </div>
         <div style="background: #f9fafb; border: 1px solid #e5e7eb; padding: 18px;">
           <div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><span class="label" style="color:#111827;">Subtotal</span><strong>${money(data?.subTotal)}</strong></div>
+          ${data?.discountAmount ? `<div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><span class="label" style="color:#111827;">Discount</span><strong style="color: #ef4444;">-${money(data.discountAmount)}</strong></div>` : ""}
           ${showTaxes ? `<div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><span class="label" style="color:#111827;">Tax</span><strong>${money(data?.taxTotal)}</strong></div>` : ""}
           <div style="display: flex; justify-content: space-between; border-top: 3px solid #111827; padding-top: 14px; font-size: 22px; font-weight: 900;"><span>TOTAL</span><span style="color: ${accent};">${money(data?.grandTotal)}</span></div>
         </div>

@@ -363,14 +363,21 @@ export async function convertToInvoice(id: string) {
     const isTaxesVisible = quo.proposal.taxesVisible !== false;
     const finalTerms = isTaxesVisible ? quo.terms : `${quo.terms || ""}\n<!--showTaxes:false-->`.trim();
 
+    const discountAmount = Number(quo.proposal?.totals?.discountAmount || 0);
+
     let calculatedSubTotal = 0;
-    let calculatedTaxTotal = 0;
     for (const item of invoiceItemsSource) {
       const amount = Number(item.quantity || 0) * Number(item.unitPrice || 0);
       calculatedSubTotal += amount;
-      calculatedTaxTotal += amount * (Number(item.taxRate || 0) / 100);
     }
-    const calculatedGrandTotal = calculatedSubTotal + (isTaxesVisible ? calculatedTaxTotal : 0);
+
+    const ratio = calculatedSubTotal > 0 ? Math.max(0, calculatedSubTotal - discountAmount) / calculatedSubTotal : 1;
+    let calculatedTaxTotal = 0;
+    for (const item of invoiceItemsSource) {
+      const amount = Number(item.quantity || 0) * Number(item.unitPrice || 0);
+      calculatedTaxTotal += amount * ratio * (Number(item.taxRate || 0) / 100);
+    }
+    const calculatedGrandTotal = Math.max(0, calculatedSubTotal - discountAmount) + (isTaxesVisible ? calculatedTaxTotal : 0);
 
     await db.insert(invoices).values({
       id: invoiceId,
@@ -381,6 +388,7 @@ export async function convertToInvoice(id: string) {
       date: new Date(),
       dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       subTotal: calculatedSubTotal,
+      discountAmount: discountAmount,
       taxTotal: isTaxesVisible ? calculatedTaxTotal : 0,
       grandTotal: calculatedGrandTotal,
       paidAmount: 0,

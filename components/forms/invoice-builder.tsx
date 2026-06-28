@@ -50,6 +50,7 @@ type InvoiceInitialData = {
   notes?: string | null;
   terms?: string | null;
   items?: InvoiceLineItem[];
+  discountAmount?: number | null;
 };
 
 type InvoiceBuilderProps = {
@@ -69,7 +70,7 @@ function toDateInput(value: unknown) {
 export function InvoiceBuilder({ clients, taxes, settings, initialData }: InvoiceBuilderProps) {
   const router = useRouter();
   const generatedId = useId().replace(/[^a-zA-Z0-9]/g, "").slice(-6);
-  const { items, addItem, updateItem, removeItem, subTotal, taxTotal, grandTotal, reset, setItems } = useBuilderStore();
+  const { items, addItem, updateItem, removeItem, subTotal, taxTotal, grandTotal, discountAmount, setDiscountAmount, reset, setItems } = useBuilderStore();
   const isEditing = Boolean(initialData?.id);
 
   const [clientId, setClientId] = useState(initialData?.clientId || "");
@@ -90,6 +91,9 @@ export function InvoiceBuilder({ clients, taxes, settings, initialData }: Invoic
 
   useEffect(() => {
     reset();
+    if (initialData?.discountAmount) {
+      setDiscountAmount(Number(initialData.discountAmount));
+    }
     if (initialData?.items?.length) {
       setItems(initialData.items.map((item: InvoiceLineItem) => ({
         id: item.id || crypto.randomUUID(),
@@ -102,7 +106,7 @@ export function InvoiceBuilder({ clients, taxes, settings, initialData }: Invoic
     } else {
       addItem();
     }
-  }, [addItem, initialData?.items, reset, setItems]);
+  }, [addItem, initialData?.items, initialData?.discountAmount, reset, setItems, setDiscountAmount]);
 
   const handleSave = async () => {
     if (!clientId || items.length === 0) {
@@ -112,7 +116,7 @@ export function InvoiceBuilder({ clients, taxes, settings, initialData }: Invoic
 
     const finalTerms = showTaxes ? terms : `${terms}\n<!--showTaxes:false-->`.trim();
     const finalTaxTotal = showTaxes ? taxTotal : 0;
-    const finalGrandTotal = showTaxes ? grandTotal : subTotal;
+    const finalGrandTotal = showTaxes ? grandTotal : Math.max(0, subTotal - discountAmount);
 
     setIsSubmitting(true);
     const data = {
@@ -123,6 +127,7 @@ export function InvoiceBuilder({ clients, taxes, settings, initialData }: Invoic
       notes,
       terms: finalTerms,
       subTotal,
+      discountAmount,
       taxTotal: finalTaxTotal,
       grandTotal: finalGrandTotal,
       items
@@ -245,6 +250,18 @@ export function InvoiceBuilder({ clients, taxes, settings, initialData }: Invoic
                 <span>Subtotal:</span>
                 <span>₹{subTotal.toLocaleString()}</span>
               </div>
+              <div className="flex justify-between items-center text-muted-foreground">
+                <Label htmlFor="invoice-discount-input" className="text-sm font-semibold">Discount (₹):</Label>
+                <Input 
+                  id="invoice-discount-input"
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  value={discountAmount || ""}
+                  onChange={(e) => setDiscountAmount(Number(e.target.value))}
+                  className="h-8 w-28 text-right font-medium"
+                />
+              </div>
               {showTaxes && (
                 <div className="flex justify-between text-muted-foreground">
                   <span>Tax:</span>
@@ -253,7 +270,7 @@ export function InvoiceBuilder({ clients, taxes, settings, initialData }: Invoic
               )}
               <div className="flex justify-between text-lg font-bold border-t border-border/50 pt-3">
                 <span>Total:</span>
-                <span className="text-orange-500">₹{(showTaxes ? grandTotal : subTotal).toLocaleString()}</span>
+                <span className="text-orange-500">₹{(showTaxes ? grandTotal : Math.max(0, subTotal - discountAmount)).toLocaleString()}</span>
               </div>
             </div>
           </div>

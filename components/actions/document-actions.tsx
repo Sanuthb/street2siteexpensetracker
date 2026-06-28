@@ -13,7 +13,7 @@ import { deleteQuotation, updateQuotationStatus } from "@/lib/actions/quotations
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface DocumentActionsProps {
   id: string;
@@ -23,8 +23,21 @@ interface DocumentActionsProps {
 
 export function DocumentActions({ id, type, status }: DocumentActionsProps) {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+     setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <Button variant="ghost" className="h-8 w-8 p-0">
+        <MoreHorizontal className="h-4 w-4" />
+      </Button>
+    );
+  }
 
   const handleDelete = async () => {
     if (!confirm(`Are you sure you want to delete this ${type}? This action cannot be undone.`)) {

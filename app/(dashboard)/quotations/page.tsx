@@ -28,6 +28,9 @@ type QuotationListItem = {
 };
 
 function countStatus(quotations: QuotationListItem[], status: string) {
+  if (status === "Approved") {
+    return quotations.filter((quotation) => quotation.status === "Approved" || quotation.status === "Converted").length;
+  }
   return quotations.filter((quotation) => quotation.status === status).length;
 }
 

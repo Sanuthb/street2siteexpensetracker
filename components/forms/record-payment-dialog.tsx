@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -14,12 +14,25 @@ import { toast } from "sonner";
 
 export function RecordPaymentDialog({ invoiceId, balanceDue }: { invoiceId: string, balanceDue: number }) {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState(balanceDue.toString());
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [paymentMethod, setPaymentMethod] = useState("Bank Transfer");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <Button className="bg-green-600 hover:bg-green-700 text-white shadow-md">
+        <CreditCard className="mr-2 h-4 w-4" /> Record Payment
+      </Button>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

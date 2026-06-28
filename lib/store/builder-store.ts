@@ -14,12 +14,14 @@ interface BuilderState {
   subTotal: number;
   taxTotal: number;
   grandTotal: number;
+  discountAmount: number;
   
   addItem: () => void;
   updateItem: (id: string, field: keyof LineItem, value: string | number) => void;
   removeItem: (id: string) => void;
   calculateTotals: () => void;
   setItems: (items: LineItem[]) => void;
+  setDiscountAmount: (discountAmount: number) => void;
   reset: () => void;
 }
 
@@ -28,6 +30,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   subTotal: 0,
   taxTotal: 0,
   grandTotal: 0,
+  discountAmount: 0,
 
   addItem: () => {
     const newItem: LineItem = {
@@ -65,17 +68,22 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   },
 
   calculateTotals: () => {
-    const { items } = get();
+    const { items, discountAmount } = get();
     let subTotal = 0;
+
+    items.forEach((item) => {
+      subTotal += Number(item.quantity) * Number(item.unitPrice);
+    });
+
+    const ratio = subTotal > 0 ? Math.max(0, subTotal - discountAmount) / subTotal : 1;
     let taxTotal = 0;
 
     items.forEach((item) => {
       const amount = Number(item.quantity) * Number(item.unitPrice);
-      subTotal += amount;
-      taxTotal += amount * (Number(item.taxRate) / 100);
+      taxTotal += amount * ratio * (Number(item.taxRate) / 100);
     });
 
-    set({ subTotal, taxTotal, grandTotal: subTotal + taxTotal });
+    set({ subTotal, taxTotal, grandTotal: Math.max(0, subTotal - discountAmount) + taxTotal });
   },
 
   setItems: (items) => {
@@ -83,5 +91,10 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     get().calculateTotals();
   },
 
-  reset: () => set({ items: [], subTotal: 0, taxTotal: 0, grandTotal: 0 }),
+  setDiscountAmount: (discountAmount) => {
+    set({ discountAmount });
+    get().calculateTotals();
+  },
+
+  reset: () => set({ items: [], subTotal: 0, taxTotal: 0, grandTotal: 0, discountAmount: 0 }),
 }));

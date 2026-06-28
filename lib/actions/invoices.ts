@@ -56,6 +56,7 @@ type InvoicePayload = {
   date: string | number | Date;
   dueDate?: string | number | Date | null;
   subTotal: number;
+  discountAmount?: number | null;
   taxTotal: number;
   grandTotal: number;
   notes?: string | null;
@@ -71,7 +72,7 @@ type InvoicePayload = {
 
 export async function createInvoice(data: InvoicePayload) {
   try {
-    const { clientId, projectId, quotationId, number, date, dueDate, subTotal, taxTotal, grandTotal, notes, terms, items } = data;
+    const { clientId, projectId, quotationId, number, date, dueDate, subTotal, discountAmount, taxTotal, grandTotal, notes, terms, items } = data;
     const id = crypto.randomUUID();
 
     await db.insert(invoices).values({
@@ -83,6 +84,7 @@ export async function createInvoice(data: InvoicePayload) {
       date: new Date(date),
       dueDate: dueDate ? new Date(dueDate) : null,
       subTotal,
+      discountAmount: discountAmount || 0,
       taxTotal,
       grandTotal,
       paidAmount: 0,
@@ -118,7 +120,7 @@ export async function createInvoice(data: InvoicePayload) {
 
 export async function updateInvoice(id: string, data: InvoicePayload) {
   try {
-    const { clientId, projectId, quotationId, number, date, dueDate, subTotal, taxTotal, grandTotal, notes, terms, items } = data;
+    const { clientId, projectId, quotationId, number, date, dueDate, subTotal, discountAmount, taxTotal, grandTotal, notes, terms, items } = data;
 
     await db.update(invoices).set({
       clientId,
@@ -128,6 +130,7 @@ export async function updateInvoice(id: string, data: InvoicePayload) {
       date: new Date(date),
       dueDate: dueDate ? new Date(dueDate) : null,
       subTotal,
+      discountAmount: discountAmount || 0,
       taxTotal,
       grandTotal,
       notes,

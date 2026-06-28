@@ -124,6 +124,12 @@ export default async function InvoicePreviewPage({ params }: { params: { id: str
                         <span>Subtotal</span>
                         <span>₹{inv.subTotal.toLocaleString()}</span>
                      </div>
+                     {inv.discountAmount !== null && inv.discountAmount > 0 && (
+                       <div className="flex justify-between text-sm font-medium text-red-500">
+                          <span>Discount</span>
+                          <span>-₹{inv.discountAmount.toLocaleString()}</span>
+                       </div>
+                     )}
                      {showTaxes && (
                        <div className="flex justify-between text-sm text-muted-foreground font-medium">
                           <span>Total Tax</span>

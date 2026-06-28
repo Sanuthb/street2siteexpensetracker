@@ -131,6 +131,7 @@ export const invoices = sqliteTable('invoices', {
   date: integer('date', { mode: 'timestamp' }).notNull(),
   dueDate: integer('due_date', { mode: 'timestamp' }),
   subTotal: real('sub_total').notNull(),
+  discountAmount: real('discount_amount'),
   taxTotal: real('tax_total').notNull(),
   grandTotal: real('grand_total').notNull(),
   paidAmount: real('paid_amount').notNull().default(0),
